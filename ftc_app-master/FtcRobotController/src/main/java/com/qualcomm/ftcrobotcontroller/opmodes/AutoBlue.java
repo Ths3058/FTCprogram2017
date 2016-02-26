@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * @author Ryan Kirkpatrick
  * @version 2/23/2016
  */
-public class Autonomous2 extends OpMode {
+public class AutoBlue extends OpMode {
     enum State {
         FWD1,
         Turn1,
@@ -35,7 +35,7 @@ public class Autonomous2 extends OpMode {
 
     final static double Fwd1count = distToEnc(24);
     final static double Turn1count = degreesToEnc(45); // 90 degrees = 2860
-    final static double Fwd2count = distToEnc(64); // 9 feet = 108 inchs = 2750
+    final static double Fwd2count = distToEnc(47.5); // 9 feet = 108 inchs = 2750
     final static double Turn2count = degreesToEnc(45);
     final static double Fwd3count = distToEnc(24);
 
@@ -81,7 +81,7 @@ public class Autonomous2 extends OpMode {
         switch (state) {
             case FWD1:
                 telemetry.addData("FWD1", 1);
-                if (getLeftPosition() > COUNTS) {
+                if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     COUNTS += Turn1count;
                     mStateTime.reset();
@@ -89,7 +89,7 @@ public class Autonomous2 extends OpMode {
                 }
             case Turn1:
                 telemetry.addData("Turn1", 2);
-                if (getLeftPosition() > COUNTS) {
+                if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     COUNTS += Fwd2count;
                     mStateTime.reset();
@@ -97,7 +97,7 @@ public class Autonomous2 extends OpMode {
                 }
             case FWD2:
                 telemetry.addData("FWD2", 3);
-                if (getLeftPosition() > COUNTS)  {
+                if (getRightPosition() > COUNTS)  {
                     setDrivePower(0, 0);
                     COUNTS += Turn2count;
                     mStateTime.reset();
@@ -106,7 +106,7 @@ public class Autonomous2 extends OpMode {
                 break;
             case Turn2:
                 telemetry.addData("Turn2", 4);
-                if (getLeftPosition() > COUNTS) {
+                if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     COUNTS += Fwd3count;
                     mStateTime.reset();
@@ -115,7 +115,7 @@ public class Autonomous2 extends OpMode {
                 break;
             case FWD3:
                 telemetry.addData("FWD3", 5);
-                if (getLeftPosition() > COUNTS) {
+                if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
                     state = State.dump_climbers;
@@ -135,13 +135,13 @@ public class Autonomous2 extends OpMode {
                 setDrivePower(0.5, 0.5);
                 break;
             case Turn1:
-                setDrivePower(0.5, -0.5);
+                setDrivePower(-0.5, 0.5);
                 break;
             case FWD2:
                 setDrivePower(0.5, 0.5);
                 break;
             case Turn2:
-                setDrivePower(0.5, -0.5);
+                setDrivePower(-0.5, 0.5);
                 break;
             case FWD3:
                 setDrivePower(0.5, 0.5);
