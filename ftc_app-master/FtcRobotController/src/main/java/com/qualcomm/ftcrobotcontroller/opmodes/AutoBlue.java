@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by Robotics on 2/15/2016.
@@ -31,11 +32,15 @@ public class AutoBlue extends OpMode {
     DcMotor right_front;
     DcMotor climber_rotate;
 
+    Servo bar_right;
+    Servo bar_left;
+    Servo fender;
+
     private State state;        // Current State Machine State.
 
     final static double Fwd1count = distToEnc(24);
     final static double Turn1count = degreesToEnc(45); // 90 degrees = 2860
-    final static double Fwd2count = distToEnc(47.5); // 9 feet = 108 inchs = 2750
+    final static double Fwd2count = distToEnc(64); // 9 feet = 108 inchs = 2750
     final static double Turn2count = degreesToEnc(45);
     final static double Fwd3count = distToEnc(24);
 
@@ -46,6 +51,7 @@ public class AutoBlue extends OpMode {
 
     @Override
     public void init() {
+        //get references to the motors from the hardware map
         left_back = hardwareMap.dcMotor.get("left_back");
         left_front = hardwareMap.dcMotor.get("left_front");
         right_back = hardwareMap.dcMotor.get("right_back");
@@ -55,6 +61,15 @@ public class AutoBlue extends OpMode {
         right_front.setDirection(DcMotor.Direction.REVERSE);
 
         COUNTS = Fwd1count;
+
+        //get references to the servos from the hardware map
+        bar_right = hardwareMap.servo.get("bar_right");
+        bar_left = hardwareMap.servo.get("bar_left");
+        fender = hardwareMap.servo.get("fender");
+
+        bar_right.setPosition(.98);
+        bar_left.setPosition(.55);
+        fender.setPosition(1);
     }
 
     @Override
@@ -81,7 +96,7 @@ public class AutoBlue extends OpMode {
         switch (state) {
             case FWD1:
                 telemetry.addData("FWD1", 1);
-                if (getRightPosition() > COUNTS) {
+                if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     COUNTS += Turn1count;
                     mStateTime.reset();
@@ -89,7 +104,7 @@ public class AutoBlue extends OpMode {
                 }
             case Turn1:
                 telemetry.addData("Turn1", 2);
-                if (getRightPosition() > COUNTS) {
+                if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     COUNTS += Fwd2count;
                     mStateTime.reset();
@@ -97,7 +112,7 @@ public class AutoBlue extends OpMode {
                 }
             case FWD2:
                 telemetry.addData("FWD2", 3);
-                if (getRightPosition() > COUNTS)  {
+                if (getLeftPosition() > COUNTS)  {
                     setDrivePower(0, 0);
                     COUNTS += Turn2count;
                     mStateTime.reset();
@@ -106,7 +121,7 @@ public class AutoBlue extends OpMode {
                 break;
             case Turn2:
                 telemetry.addData("Turn2", 4);
-                if (getRightPosition() > COUNTS) {
+                if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     COUNTS += Fwd3count;
                     mStateTime.reset();
@@ -115,7 +130,7 @@ public class AutoBlue extends OpMode {
                 break;
             case FWD3:
                 telemetry.addData("FWD3", 5);
-                if (getRightPosition() > COUNTS) {
+                if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
                     state = State.dump_climbers;
@@ -135,13 +150,13 @@ public class AutoBlue extends OpMode {
                 setDrivePower(0.5, 0.5);
                 break;
             case Turn1:
-                setDrivePower(-0.5, 0.5);
+                setDrivePower(0.5, -0.5);
                 break;
             case FWD2:
                 setDrivePower(0.5, 0.5);
                 break;
             case Turn2:
-                setDrivePower(-0.5, 0.5);
+                setDrivePower(0.5, -0.5);
                 break;
             case FWD3:
                 setDrivePower(0.5, 0.5);

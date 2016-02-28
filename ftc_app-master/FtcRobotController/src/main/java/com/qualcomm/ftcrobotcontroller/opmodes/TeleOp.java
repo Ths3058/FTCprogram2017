@@ -22,18 +22,12 @@ public class TeleOp extends OpMode
     DcMotor climber_rotate;
     DcMotor climber_extend;
 
-    //final double PUSH_UP_POSITION = 0.0;
-    //final double PUSH_DOWN_POSITION = 1.0;
-    //final double STOP = 0.5;
-
     float leftY = 0;
     float rightY = 0;
-    
-    boolean leftPress = false;
-    boolean rightPress = false;
 
     Servo bar_right;
     Servo bar_left;
+    Servo fender;
 
     @Override
     public void init() {
@@ -50,6 +44,7 @@ public class TeleOp extends OpMode
         //get references to the servos from the hardware map
         bar_right = hardwareMap.servo.get("bar_right");
         bar_left = hardwareMap.servo.get("bar_left");
+        fender = hardwareMap.servo.get("fender");
 
         //reverse the right motor
         right_back.setDirection(DcMotor.Direction.REVERSE);
@@ -57,6 +52,7 @@ public class TeleOp extends OpMode
 
         bar_right.setPosition(.98);
         bar_left.setPosition(.55);
+        fender.setPosition(1);
     }
 
     @Override
@@ -147,6 +143,15 @@ public class TeleOp extends OpMode
         } else {
             if (gamepad2.b) {
                 bar_left.setPosition(.55);
+            }
+        }
+
+        // controls fender to push balls
+        if (gamepad1.x) {
+            fender.setPosition(1);
+        } else {
+            if (gamepad1.y) {
+                fender.setPosition(.1);
             }
         }
     }
