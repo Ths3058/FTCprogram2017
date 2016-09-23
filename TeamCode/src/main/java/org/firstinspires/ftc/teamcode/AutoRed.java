@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
@@ -7,37 +9,28 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
- * Created by Robotics on 2/15/2016.
+ * Created by Robotics.
  *
  * @author Ryan Kirkpatrick
  * @version 2/23/2016
  */
+@Autonomous(name = "Auto:Red", group = "Autonomous")
+@Disabled
 public class AutoRed extends OpMode {
     enum State {
         FWD1,
-        Turn1,
-        FWD2,
-        Turn2,
-        FWD3,
-        dump_climbers,
         done
     }
 
     //--------------------------------------------------------------------------
     // Robot device Objects
     //--------------------------------------------------------------------------
-    DcMotor left_back;
-    DcMotor left_front;
-    DcMotor right_back;
-    DcMotor right_front;
-    DcMotor climber_rotate;
-
-    Servo bar_right;
-    Servo bar_left;
-    Servo fender;
+    DcMotor left;
+    DcMotor right;
 
     private State state;        // Current State Machine State.
 
+    //set counts for each state
     final static double Fwd1count = distToEnc(24);
     final static double Turn1count = degreesToEnc(45); // 90 degrees = 2860
     final static double Fwd2count = distToEnc(47.5); // 9 feet = 108 inchs = 2750
@@ -51,13 +44,8 @@ public class AutoRed extends OpMode {
 
     @Override
     public void init() {
-        left_back = hardwareMap.dcMotor.get("left_back");
-        left_front = hardwareMap.dcMotor.get("left_front");
-        right_back = hardwareMap.dcMotor.get("right_back");
-        right_front = hardwareMap.dcMotor.get("right_front");
-        climber_rotate = hardwareMap.dcMotor.get("climber_rotate");
-        right_back.setDirection(DcMotor.Direction.REVERSE);
-        right_front.setDirection(DcMotor.Direction.REVERSE);
+        left = hardwareMap.dcMotor.get("left");
+        right = hardwareMap.dcMotor.get("right");
 
         COUNTS = Fwd1count;
     }
@@ -67,20 +55,10 @@ public class AutoRed extends OpMode {
         state = State.FWD1;
         setDrivePower(0, 0);
         mStateTime.reset();
-        /*
-        left_front.setChannelMode(DcMotorController.RunMode.RESET_ENCODERS);
-        right_front.setChannelMode(DcMotorController.RunMode.RESET_ENCODERS);
-        left_front.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-        right_front.setChannelMode(DcMotorController.RunMode.RUN_USING_ENCODERS);*/
 
         //get references to the servos from the hardware map
-        bar_right = hardwareMap.servo.get("bar_right");
-        bar_left = hardwareMap.servo.get("bar_left");
-        fender = hardwareMap.servo.get("fender");
 
-        bar_right.setPosition(.98);
-        bar_left.setPosition(.55);
-        fender.setPosition(1);
+        //set initial servo positions
     }
 
     @Override
@@ -100,69 +78,14 @@ public class AutoRed extends OpMode {
                     setDrivePower(0, 0);
                     COUNTS += Turn1count;
                     mStateTime.reset();
-                    state = State.Turn1;
-                }
-            case Turn1:
-                telemetry.addData("Turn1", 2);
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += Fwd2count;
-                    mStateTime.reset();
-                    state = State.FWD2;
-                }
-            case FWD2:
-                telemetry.addData("FWD2", 3);
-                if (getRightPosition() > COUNTS)  {
-                    setDrivePower(0, 0);
-                    COUNTS += Turn2count;
-                    mStateTime.reset();
-                    state = State.Turn2;
-                }
-                break;
-            case Turn2:
-                telemetry.addData("Turn2", 4);
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += Fwd3count;
-                    mStateTime.reset();
-                    state = State.FWD3;
-                }
-                break;
-            case FWD3:
-                telemetry.addData("FWD3", 5);
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    mStateTime.reset();
-                    state = State.dump_climbers;
-                }
-            case dump_climbers:
-                telemetry.addData("dump_climbers", 6);
-                if (mStateTime.time() > 3.0) {
-                    setDrivePower(0, 0);
-                    climber_rotate.setPower(0);
-                    mStateTime.reset();
                     state = State.done;
                 }
+                break;
         }
 
         switch (state) {
             case FWD1:
                 setDrivePower(0.5, 0.5);
-                break;
-            case Turn1:
-                setDrivePower(-0.5, 0.5);
-                break;
-            case FWD2:
-                setDrivePower(0.5, 0.5);
-                break;
-            case Turn2:
-                setDrivePower(-0.5, 0.5);
-                break;
-            case FWD3:
-                setDrivePower(0.5, 0.5);
-                break;
-            case dump_climbers:
-                climber_rotate.setPower(0.2);
                 break;
             case done:
                 stop();
@@ -189,17 +112,17 @@ public class AutoRed extends OpMode {
     //--------------------------------------------------------------------------
     void setDrivePower(double leftPower, double rightPower)
     {
-        left_front.setPower(leftPower);
-        left_back.setPower(leftPower);
-        right_front.setPower(rightPower);
-        right_back.setPower(rightPower);
+        left.setPower(leftPower);
+        right.setPower(rightPower);
     }
 
     //--------------------------------------------------------------------------
     // getLeftPosition ()
     // Return Left Encoder count
     //--------------------------------------------------------------------------
-    int getLeftPosition() { return Math.abs(left_front.getCurrentPosition()); }
+    int getLeftPosition() {
+        return Math.abs(left.getCurrentPosition());
+    }
 
     //--------------------------------------------------------------------------
     // getRightPosition ()
@@ -207,12 +130,12 @@ public class AutoRed extends OpMode {
     //--------------------------------------------------------------------------
     int getRightPosition()
     {
-        return Math.abs(right_front.getCurrentPosition());
+        return Math.abs(right.getCurrentPosition());
     }
 
     //--------------------------------------------------------------------------
     // distToEnc ()
-    // Parameters feet
+    // Parameters inches
     // Return encoder count
     //--------------------------------------------------------------------------
     static int distToEnc(double inch) { return (int)(inch/12.0*2750); }
