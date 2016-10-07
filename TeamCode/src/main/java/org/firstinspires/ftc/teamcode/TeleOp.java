@@ -12,21 +12,23 @@ import com.qualcomm.robotcore.hardware.Servo;
  * @version 9/23/2016
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp", group = "TeleOp")
-@Disabled
+//@Disabled
 public class TeleOp extends OpMode
 {
     // motors
     DcMotor left;
     DcMotor right;
+    DcMotor lift;
 
-    float leftY = 0;
-    float rightY = 0;
+    private float leftY = 0;
+    private float rightY = 0;
 
     @Override
     public void init() {
         //get references to the motors from the hardware map
         left = hardwareMap.dcMotor.get("left");
         right = hardwareMap.dcMotor.get("right");
+        lift = hardwareMap.dcMotor.get("lift");
 
         //get references to the servos from the hardware map
 
@@ -58,6 +60,17 @@ public class TeleOp extends OpMode
 
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
+
+        // Vertical Ball Elevator
+        if(gamepad1.right_bumper) {         // elevator up
+            lift.setPower(.5);
+        } else {
+            if(gamepad1.left_bumper) {      // elevator down
+                lift.setPower(-.5);
+            } else {
+                lift.setPower(0);
+            }
+        }
     }
 }
 
