@@ -12,7 +12,7 @@ import java.lang.Override;
  * @version 9/22/16
  */
 @Autonomous(name = "test", group = "Test Programs")
-@Disabled
+//@Disabled
 public class test extends OpMode {
     //Motors
     DcMotor left;
