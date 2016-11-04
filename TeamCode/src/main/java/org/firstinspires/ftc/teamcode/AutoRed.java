@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,7 +16,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * @version 2/23/2016
  */
 @Autonomous(name = "Auto:Red", group = "Autonomous")
-@Disabled
 public class AutoRed extends OpMode {
     enum State {
         FWD1,
@@ -27,15 +27,17 @@ public class AutoRed extends OpMode {
     //--------------------------------------------------------------------------
     DcMotor left;
     DcMotor right;
+    DcMotor lift;
+    DcMotor caplift;
+    DcMotor shoot_left;
+    DcMotor shoot_right;
+
+    CRServo sweep;
 
     private State state;        // Current State Machine State.
 
     //set counts for each state
     final static double Fwd1count = distToEnc(24);
-    final static double Turn1count = degreesToEnc(45); // 90 degrees = 2860
-    final static double Fwd2count = distToEnc(47.5); // 9 feet = 108 inchs = 2750
-    final static double Turn2count = degreesToEnc(45);
-    final static double Fwd3count = distToEnc(24);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -44,8 +46,20 @@ public class AutoRed extends OpMode {
 
     @Override
     public void init() {
+        //get references to the motors from the hardware map
         left = hardwareMap.dcMotor.get("left");
         right = hardwareMap.dcMotor.get("right");
+        lift = hardwareMap.dcMotor.get("lift");
+        caplift = hardwareMap.dcMotor.get("caplift");
+        shoot_left = hardwareMap.dcMotor.get("shoot_left");
+        shoot_right = hardwareMap.dcMotor.get("shoot_right");
+
+        //get references to the servos from the hardware map
+        sweep = hardwareMap.crservo.get("sweep");
+
+        //reverse the right motor
+        right.setDirection(DcMotor.Direction.REVERSE);
+        shoot_right.setDirection(DcMotor.Direction.REVERSE);
 
         COUNTS = Fwd1count;
     }
@@ -76,7 +90,6 @@ public class AutoRed extends OpMode {
                 telemetry.addData("FWD1", 1);
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += Turn1count;
                     mStateTime.reset();
                     state = State.done;
                 }
@@ -94,6 +107,10 @@ public class AutoRed extends OpMode {
     }
 
     //--------------------------------------------------------------------------
+    // User Defined Utility functions here....
+    //--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
     // stop
     //--------------------------------------------------------------------------
     @Override
@@ -102,10 +119,6 @@ public class AutoRed extends OpMode {
         // Ensure that the motors are turned off.
         setDrivePower(0, 0);
     }
-
-    //--------------------------------------------------------------------------
-    // User Defined Utility functions here....
-    //--------------------------------------------------------------------------
 
     //--------------------------------------------------------------------------
     // setDrivePower( LeftPower, RightPower);

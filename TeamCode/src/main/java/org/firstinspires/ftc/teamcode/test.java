@@ -23,12 +23,12 @@ public class test extends OpMode {
         left = hardwareMap.dcMotor.get("left");
         right = hardwareMap.dcMotor.get("right");
 
-        left.setDirection(DcMotor.Direction.REVERSE);
+        //left.setDirection(DcMotor.Direction.REVERSE);
     }
 
     @Override
     public void loop() {
-        left.setPower(1);
+        left.setPower(-1);
         right.setPower(1);
     }
 }
