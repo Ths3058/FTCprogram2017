@@ -13,12 +13,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by Robotics.
  *
  * @author Ryan Kirkpatrick
- * @version 2/23/2016
+ * @version 11/5/2016
  */
 @Autonomous(name = "Auto:Red", group = "Autonomous")
 public class AutoRed extends OpMode {
     enum State {
         FWD1,
+        Shoot,
+        FWD2,
         done
     }
 
@@ -38,6 +40,7 @@ public class AutoRed extends OpMode {
 
     //set counts for each state
     final static double Fwd1count = distToEnc(24);
+    final static double Fwd2count = distToEnc(24);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -91,6 +94,23 @@ public class AutoRed extends OpMode {
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
+                    state = State.Shoot;
+                }
+                break;
+            case Shoot:
+                telemetry.addData("Shoot", 1);
+                if (mStateTime.time() >= 5) {
+                    shoot(0);
+                    COUNTS += Fwd2count;
+                    mStateTime.reset();
+                    state = State.FWD2;
+                }
+                break;
+            case FWD2:
+                telemetry.addData("FWD2", 1);
+                if (getLeftPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    mStateTime.reset();
                     state = State.done;
                 }
                 break;
@@ -98,6 +118,13 @@ public class AutoRed extends OpMode {
 
         switch (state) {
             case FWD1:
+                setDrivePower(0.5, 0.5);
+                break;
+            case Shoot:
+                shoot(.9);
+                lift.setPower(-.25);
+                break;
+            case FWD2:
                 setDrivePower(0.5, 0.5);
                 break;
             case done:
@@ -118,15 +145,27 @@ public class AutoRed extends OpMode {
     {
         // Ensure that the motors are turned off.
         setDrivePower(0, 0);
+        caplift.setPower(0);
+        lift.setPower(0);
+        shoot(0);
     }
 
     //--------------------------------------------------------------------------
-    // setDrivePower( LeftPower, RightPower);
+    // setDrivePower( LeftPower, RightPower );
     //--------------------------------------------------------------------------
     void setDrivePower(double leftPower, double rightPower)
     {
         left.setPower(leftPower);
         right.setPower(rightPower);
+    }
+
+    //----------------------------------
+    // shoot ( power );
+    // Set shooter speed
+    //----------------------------------
+    private void shoot(double speed) {
+        shoot_left.setPower(speed);
+        shoot_right.setPower(speed);
     }
 
     //--------------------------------------------------------------------------
@@ -151,12 +190,12 @@ public class AutoRed extends OpMode {
     // Parameters inches
     // Return encoder count
     //--------------------------------------------------------------------------
-    static int distToEnc(double inch) { return (int)(inch/12.0*2750); }
+    static int distToEnc(double inch) { return (int)(inch/12.0*450); } //2750
 
     //--------------------------------------------------------------------------
     // degreesToEnc ()
     // Parameters degrees
     // Return encoder count
     //--------------------------------------------------------------------------
-    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*2500); } // 2860
+    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*450); } // 2860, 2500
 }

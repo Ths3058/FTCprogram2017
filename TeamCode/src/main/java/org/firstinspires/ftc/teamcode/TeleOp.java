@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
  * Created by Robotics.
  *
  * @author Ryan Kirkpatrick
- * @version 9/23/2016
+ * @version 11/5/2016
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp", group = "TeleOp")
 //@Disabled
@@ -25,6 +25,7 @@ public class TeleOp extends OpMode {
 
     // Servos
     CRServo sweep;
+    Servo arm;
 
     private float leftY = 0;
     private float rightY = 0;
@@ -41,14 +42,16 @@ public class TeleOp extends OpMode {
 
         //get references to the servos from the hardware map
         sweep = hardwareMap.crservo.get("sweep");
+        arm = hardwareMap.servo.get("arm");
 
         //reverse the right motor
         right.setDirection(DcMotor.Direction.REVERSE);
         shoot_right.setDirection(DcMotor.Direction.REVERSE);
 
         //set the initial positions for the servos
+        arm.setPosition(120);
 
-        //set the initial power for the CRServos(continuous rotationi servos)
+        //set the initial power for the CRServos(continuous rotation servos)
         sweep.setPower(0);
     }
 
@@ -69,8 +72,8 @@ public class TeleOp extends OpMode {
         }
 
         //set the power of the motors with the gamepad values
-        left.setPower(leftY * 1);
-        right.setPower(rightY * 1);
+        left.setPower(leftY * 0.5);
+        right.setPower(rightY * 0.5);
 
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
@@ -91,7 +94,7 @@ public class TeleOp extends OpMode {
 
         // Ball Shooter
         if (gamepad1.right_trigger > 0) {
-            shoot(1.0);
+            shoot(.9);
         } else {
             shoot(0);
         }
@@ -105,12 +108,12 @@ public class TeleOp extends OpMode {
             caplift.setPower(0);
         }
 
-        /*// Elevator Sweeper
-        if (gamepad1.a) {
-            sweep.setPower(1);
-        } else {
-            sweep.setPower(0);
-        }*/
+        // Arm for holding cap ball lift arm up
+        if (gamepad2.a) {
+            arm.setPosition(0);
+        } else if (gamepad2.b) {
+            arm.setPosition(120);
+        }
     }
 
     //----------------------------------
