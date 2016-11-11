@@ -34,13 +34,14 @@ public class AutoRed extends OpMode {
     DcMotor shoot_left;
     DcMotor shoot_right;
 
+    Servo arm;
     CRServo sweep;
 
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    final static double Fwd1count = distToEnc(24);
-    final static double Fwd2count = distToEnc(24);
+    final static double Fwd1count = distToEnc(24); // fix distance
+    final static double Fwd2count = distToEnc(30);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -58,11 +59,15 @@ public class AutoRed extends OpMode {
         shoot_right = hardwareMap.dcMotor.get("shoot_right");
 
         //get references to the servos from the hardware map
+        arm = hardwareMap.servo.get("arm");
         sweep = hardwareMap.crservo.get("sweep");
 
         //reverse the right motor
         right.setDirection(DcMotor.Direction.REVERSE);
         shoot_right.setDirection(DcMotor.Direction.REVERSE);
+
+        //set the initial positions for the servos
+        arm.setPosition(0);
 
         COUNTS = Fwd1count;
     }
@@ -76,6 +81,7 @@ public class AutoRed extends OpMode {
         //get references to the servos from the hardware map
 
         //set initial servo positions
+
     }
 
     @Override
@@ -99,7 +105,7 @@ public class AutoRed extends OpMode {
                 break;
             case Shoot:
                 telemetry.addData("Shoot", 1);
-                if (mStateTime.time() >= 5) {
+                if (mStateTime.time() >= 4) {
                     shoot(0);
                     COUNTS += Fwd2count;
                     mStateTime.reset();
@@ -160,7 +166,7 @@ public class AutoRed extends OpMode {
     }
 
     //----------------------------------
-    // shoot ( power );
+    // shoot ( power );v
     // Set shooter speed
     //----------------------------------
     private void shoot(double speed) {
@@ -190,12 +196,12 @@ public class AutoRed extends OpMode {
     // Parameters inches
     // Return encoder count
     //--------------------------------------------------------------------------
-    static int distToEnc(double inch) { return (int)(inch/12.0*450); } //2750
+    static int distToEnc(double inch) { return (int)(inch/12.0*2500); } //2750
 
     //--------------------------------------------------------------------------
     // degreesToEnc ()
     // Parameters degrees
     // Return encoder count
     //--------------------------------------------------------------------------
-    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*450); } // 2860, 2500
+    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*1800); } // 2860, 2500
 }

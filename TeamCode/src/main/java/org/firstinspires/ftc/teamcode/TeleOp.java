@@ -49,7 +49,7 @@ public class TeleOp extends OpMode {
         shoot_right.setDirection(DcMotor.Direction.REVERSE);
 
         //set the initial positions for the servos
-        arm.setPosition(120);
+        arm.setPosition(0);
 
         //set the initial power for the CRServos(continuous rotation servos)
         sweep.setPower(0);
@@ -60,20 +60,20 @@ public class TeleOp extends OpMode {
         //get the values from the gamepads
         //note: pushing the stick all the way up returns -1,
         // so we need to reverse the values
-        if (gamepad1.left_stick_y < .1 && gamepad1.left_stick_y > -.1) { //deadband left
+        if (gamepad1.left_stick_y < .1 && gamepad1.left_stick_y > -.1) { //deadband left stick
             leftY = 0;
         } else {
             leftY = -gamepad1.left_stick_y;
         }
-        if (gamepad1.right_stick_y < .1 && gamepad1.right_stick_y > -.1) { //deadband right
+        if (gamepad1.right_stick_y < .1 && gamepad1.right_stick_y > -.1) { //deadband right stick
             rightY = 0;
         } else {
             rightY = -gamepad1.right_stick_y;
         }
 
         //set the power of the motors with the gamepad values
-        left.setPower(leftY * 0.5);
-        right.setPower(rightY * 0.5);
+        left.setPower(leftY * 0.75);
+        right.setPower(rightY * 0.75);
 
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
@@ -112,7 +112,7 @@ public class TeleOp extends OpMode {
         if (gamepad2.a) {
             arm.setPosition(0);
         } else if (gamepad2.b) {
-            arm.setPosition(120);
+            arm.setPosition(130);
         }
     }
 

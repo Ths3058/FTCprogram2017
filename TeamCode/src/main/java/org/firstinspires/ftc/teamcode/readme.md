@@ -6,34 +6,25 @@ This module, TeamCode, is the place where you will write/paste the code for your
 robot controller App. This module is currently empty (a clean slate) but the
 process for adding OpModes is straightforward.
 
-
 ## Creating your own OpModes
-
 
 The easiest way to create your own OpMode is to copy a Sample OpMode and make it your own.
 
-
 Sample opmodes exist in the FtcRobotController module.
-
 To locate these samples, find the FtcRobotController module in the "Project/Android" tab.
+
 Expand the following tree elements:
  FtcRobotController / java / org.firstinspires.ftc.robotcontroller / external / samples
-
 
 A range of different samples classes can be seen in this folder.
 The class names follow a naming convention which indicates the purpose of each class.
 The full description of this convention is found in the samples/sample_convention.md file.
 
-
 A brief synopsis of the naming convention is given here:
-
 The prefix of the name will be one of the following:
 
-* 
-Template: 
-This is a minimally functional OpMode used to illustrate the skeleton/structure
+* Template: This is a minimally functional OpMode used to illustrate the skeleton/structure
             of a particular style of OpMode.  These are bare bones examples.
-
 * Sensor:   This is a Sample OpMode that shows how to use a specific sensor.
             It is not intended as a functioning robot, it is simply showing the minimal code
             required to read and display the sensor values.
@@ -45,7 +36,6 @@ This is a minimally functional OpMode used to illustrate the skeleton/structure
 * Concept:	This is a sample OpMode that illustrates performing a specific function or concept.
             These may be complex, but their operation should be explained clearly in the comments,
             or the header should reference an external doc, guide or tutorial.
-
 * Library:  This is a class, or set of classes used to implement some strategy.
             These will typically NOT implement a full OpMode.  Instead they will be included
             by an OpMode to provide some stand-alone capability.
