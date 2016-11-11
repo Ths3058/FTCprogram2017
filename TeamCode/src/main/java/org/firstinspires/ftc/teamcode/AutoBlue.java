@@ -1,24 +1,26 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import static org.firstinspires.ftc.teamcode.StaticFunctions.*;
 
 /**
  * Created by Robotics.
  *
  * @author Ryan Kirkpatrick
- * @version 2/23/2016
+ * @version 11/5/2016
  */
 @Autonomous(name = "Auto:Blue", group = "Autonomous")
-@Disabled
 public class AutoBlue extends OpMode {
     enum State {
         FWD1,
+        Shoot,
+        FWD2,
         done
     }
 
@@ -27,15 +29,19 @@ public class AutoBlue extends OpMode {
     //--------------------------------------------------------------------------
     DcMotor left;
     DcMotor right;
+    DcMotor lift;
+    DcMotor caplift;
+    DcMotor shoot_left;
+    DcMotor shoot_right;
+
+    Servo arm;
+    CRServo sweep;
 
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    final static double Fwd1count = distToEnc(24);
-    final static double Turn1count = degreesToEnc(45); // 90 degrees = 2860
-    final static double Fwd2count = distToEnc(47.5); // 9 feet = 108 inchs = 2750
-    final static double Turn2count = degreesToEnc(45);
-    final static double Fwd3count = distToEnc(24);
+    final static double Fwd1count = distToEnc(24); // fix distance
+    final static double Fwd2count = distToEnc(30);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -44,8 +50,24 @@ public class AutoBlue extends OpMode {
 
     @Override
     public void init() {
+        //get references to the motors from the hardware map
         left = hardwareMap.dcMotor.get("left");
         right = hardwareMap.dcMotor.get("right");
+        lift = hardwareMap.dcMotor.get("lift");
+        caplift = hardwareMap.dcMotor.get("caplift");
+        shoot_left = hardwareMap.dcMotor.get("shoot_left");
+        shoot_right = hardwareMap.dcMotor.get("shoot_right");
+
+        //get references to the servos from the hardware map
+        arm = hardwareMap.servo.get("arm");
+        sweep = hardwareMap.crservo.get("sweep");
+
+        //reverse the right motor
+        right.setDirection(DcMotor.Direction.REVERSE);
+        shoot_right.setDirection(DcMotor.Direction.REVERSE);
+
+        //set the initial positions for the servos
+        arm.setPosition(0);
 
         COUNTS = Fwd1count;
     }
@@ -59,6 +81,7 @@ public class AutoBlue extends OpMode {
         //get references to the servos from the hardware map
 
         //set initial servo positions
+
     }
 
     @Override
@@ -76,7 +99,23 @@ public class AutoBlue extends OpMode {
                 telemetry.addData("FWD1", 1);
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += Turn1count;
+                    mStateTime.reset();
+                    state = State.Shoot;
+                }
+                break;
+            case Shoot:
+                telemetry.addData("Shoot", 1);
+                if (mStateTime.time() >= 4) {
+                    shootspeed(0);
+                    COUNTS += Fwd2count;
+                    mStateTime.reset();
+                    state = State.FWD2;
+                }
+                break;
+            case FWD2:
+                telemetry.addData("FWD2", 1);
+                if (getLeftPosition() > COUNTS || mStateTime.time() >= 6) {
+                    setDrivePower(0, 0);
                     mStateTime.reset();
                     state = State.done;
                 }
@@ -87,11 +126,22 @@ public class AutoBlue extends OpMode {
             case FWD1:
                 setDrivePower(0.5, 0.5);
                 break;
+            case Shoot:
+                shootspeed(.9);
+                lift.setPower(-.25);
+                break;
+            case FWD2:
+                setDrivePower(0.5, 0.5);
+                break;
             case done:
                 stop();
                 break;
         }
     }
+
+    //--------------------------------------------------------------------------
+    // User Defined Utility functions here....
+    //--------------------------------------------------------------------------
 
     //--------------------------------------------------------------------------
     // stop
@@ -101,19 +151,27 @@ public class AutoBlue extends OpMode {
     {
         // Ensure that the motors are turned off.
         setDrivePower(0, 0);
+        caplift.setPower(0);
+        lift.setPower(0);
+        shootspeed(0);
     }
 
     //--------------------------------------------------------------------------
-    // User Defined Utility functions here....
-    //--------------------------------------------------------------------------
-
-    //--------------------------------------------------------------------------
-    // setDrivePower( LeftPower, RightPower);
+    // setDrivePower( LeftPower, RightPower );
     //--------------------------------------------------------------------------
     void setDrivePower(double leftPower, double rightPower)
     {
         left.setPower(leftPower);
         right.setPower(rightPower);
+    }
+
+    //----------------------------------
+    // shootspeed ( power );v
+    // Set shooter speed
+    //----------------------------------
+    private void shootspeed(double speed) {
+        shoot_left.setPower(speed);
+        shoot_right.setPower(speed);
     }
 
     //--------------------------------------------------------------------------
@@ -132,18 +190,4 @@ public class AutoBlue extends OpMode {
     {
         return Math.abs(right.getCurrentPosition());
     }
-
-    //--------------------------------------------------------------------------
-    // distToEnc ()
-    // Parameters inches
-    // Return encoder count
-    //--------------------------------------------------------------------------
-    static int distToEnc(double inch) { return (int)(inch/12.0*2750); }
-
-    //--------------------------------------------------------------------------
-    // degreesToEnc ()
-    // Parameters degrees
-    // Return encoder count
-    //--------------------------------------------------------------------------
-    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*2500); } // 2860
 }
