@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -72,8 +71,8 @@ public class TeleOp extends OpMode {
         }
 
         //set the power of the motors with the gamepad values
-        left.setPower(leftY * 0.75);
-        right.setPower(rightY * 0.75);
+        left.setPower(leftY * 1);
+        right.setPower(rightY * 1);
 
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
@@ -94,9 +93,9 @@ public class TeleOp extends OpMode {
 
         // Ball Shooter
         if (gamepad1.right_trigger > 0) {
-            shoot(.9);
+            shootspeed(.9);
         } else {
-            shoot(0);
+            shootspeed(0);
         }
 
         // Cap ball lift
@@ -119,7 +118,7 @@ public class TeleOp extends OpMode {
     //----------------------------------
     // Set shooter speed
     //----------------------------------
-    private void shoot(double speed) {
+    private void shootspeed(double speed) {
         shoot_left.setPower(speed);
         shoot_right.setPower(speed);
     }

@@ -5,9 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import static org.firstinspires.ftc.teamcode.StaticFunctions.*;
 
 /**
  * Created by Robotics.
@@ -106,7 +107,7 @@ public class AutoRed extends OpMode {
             case Shoot:
                 telemetry.addData("Shoot", 1);
                 if (mStateTime.time() >= 4) {
-                    shoot(0);
+                    shootspeed(0);
                     COUNTS += Fwd2count;
                     mStateTime.reset();
                     state = State.FWD2;
@@ -127,7 +128,7 @@ public class AutoRed extends OpMode {
                 setDrivePower(0.5, 0.5);
                 break;
             case Shoot:
-                shoot(.9);
+                shootspeed(.9);
                 lift.setPower(-.25);
                 break;
             case FWD2:
@@ -147,13 +148,12 @@ public class AutoRed extends OpMode {
     // stop
     //--------------------------------------------------------------------------
     @Override
-    public void stop()
-    {
+    public void stop() {
         // Ensure that the motors are turned off.
         setDrivePower(0, 0);
         caplift.setPower(0);
         lift.setPower(0);
-        shoot(0);
+        shootspeed(0);
     }
 
     //--------------------------------------------------------------------------
@@ -166,10 +166,10 @@ public class AutoRed extends OpMode {
     }
 
     //----------------------------------
-    // shoot ( power );v
+    // shoot ( power );
     // Set shooter speed
     //----------------------------------
-    private void shoot(double speed) {
+    void shootspeed(double speed) {
         shoot_left.setPower(speed);
         shoot_right.setPower(speed);
     }
@@ -190,18 +190,4 @@ public class AutoRed extends OpMode {
     {
         return Math.abs(right.getCurrentPosition());
     }
-
-    //--------------------------------------------------------------------------
-    // distToEnc ()
-    // Parameters inches
-    // Return encoder count
-    //--------------------------------------------------------------------------
-    static int distToEnc(double inch) { return (int)(inch/12.0*2500); } //2750
-
-    //--------------------------------------------------------------------------
-    // degreesToEnc ()
-    // Parameters degrees
-    // Return encoder count
-    //--------------------------------------------------------------------------
-    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*1800); } // 2860, 2500
 }
