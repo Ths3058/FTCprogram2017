@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
  * @version 11/5/2016
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp", group = "TeleOp")
-//@Disabled
 public class TeleOp extends OpMode {
     // Motors
     DcMotor left;

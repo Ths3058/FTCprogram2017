@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,7 +17,7 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.*;
  */
 @Autonomous(name = "Auto:Red", group = "Autonomous")
 public class AutoRed extends OpMode {
-    enum State {
+    private enum State {
         FWD1,
         Shoot,
         FWD2,
@@ -28,26 +27,26 @@ public class AutoRed extends OpMode {
     //--------------------------------------------------------------------------
     // Robot device Objects
     //--------------------------------------------------------------------------
-    DcMotor left;
-    DcMotor right;
-    DcMotor lift;
-    DcMotor caplift;
-    DcMotor shoot_left;
-    DcMotor shoot_right;
+    private DcMotor left;
+    private DcMotor right;
+    private DcMotor lift;
+    private DcMotor caplift;
+    private DcMotor shoot_left;
+    private DcMotor shoot_right;
 
-    Servo arm;
-    CRServo sweep;
+    private Servo arm;
+    private CRServo sweep;
 
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    final static double Fwd1count = distToEnc(24); // fix distance
-    final static double Fwd2count = distToEnc(30);
+    private final static double Fwd1count = distToEnc(24); // fix distance
+    private final static double Fwd2count = distToEnc(30);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
-    double COUNTS = 0;
+    private double COUNTS = 0;
 
     @Override
     public void init() {
@@ -88,11 +87,11 @@ public class AutoRed extends OpMode {
     @Override
     public void loop() {
         // Send the current state info (state and time) back to first line of driver station telemetry.
-        telemetry.addData("0", String.format("%4.1f ", mStateTime.time()) + state.toString());
+        telemetry.addData("0", String.format("%4.1f %6s", mStateTime.time(), state.toString()));
         // Send the current encoder info (encoder counts left and right).
         telemetry.addData("ENC", String.format("L:R %d:%d", getLeftPosition(), getRightPosition()));
         // Send the current total counts.
-        telemetry.addData("Total Target", COUNTS);
+        telemetry.addData("Total Target ", COUNTS);
 
         // First switch statement
         switch (state) {
@@ -159,7 +158,7 @@ public class AutoRed extends OpMode {
     //--------------------------------------------------------------------------
     // setDrivePower( LeftPower, RightPower );
     //--------------------------------------------------------------------------
-    void setDrivePower(double leftPower, double rightPower)
+    private void setDrivePower(double leftPower, double rightPower)
     {
         left.setPower(leftPower);
         right.setPower(rightPower);
@@ -169,7 +168,7 @@ public class AutoRed extends OpMode {
     // shoot ( power );
     // Set shooter speed
     //----------------------------------
-    void shootspeed(double speed) {
+    private void shootspeed(double speed) {
         shoot_left.setPower(speed);
         shoot_right.setPower(speed);
     }
@@ -178,7 +177,7 @@ public class AutoRed extends OpMode {
     // getLeftPosition ()
     // Return Left Encoder count
     //--------------------------------------------------------------------------
-    int getLeftPosition() {
+    private int getLeftPosition() {
         return Math.abs(left.getCurrentPosition());
     }
 
@@ -186,7 +185,7 @@ public class AutoRed extends OpMode {
     // getRightPosition ()
     // Return Right Encoder count
     //--------------------------------------------------------------------------
-    int getRightPosition()
+    private int getRightPosition()
     {
         return Math.abs(right.getCurrentPosition());
     }
