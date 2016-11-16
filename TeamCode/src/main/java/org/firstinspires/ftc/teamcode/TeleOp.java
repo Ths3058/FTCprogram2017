@@ -14,16 +14,16 @@ import com.qualcomm.robotcore.hardware.CRServo;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp", group = "TeleOp")
 public class TeleOp extends OpMode {
     // Motors
-    DcMotor left;
-    DcMotor right;
-    DcMotor lift;
-    DcMotor caplift;
-    DcMotor shoot_left;
-    DcMotor shoot_right;
+    private DcMotor left;
+    private DcMotor right;
+    private DcMotor lift;
+    private DcMotor caplift;
+    private DcMotor shoot_left;
+    private DcMotor shoot_right;
 
     // Servos
-    CRServo sweep;
-    Servo arm;
+    private CRServo sweep;
+    private Servo arm;
 
     private float leftY = 0;
     private float rightY = 0;
@@ -58,6 +58,7 @@ public class TeleOp extends OpMode {
         //get the values from the gamepads
         //note: pushing the stick all the way up returns -1,
         // so we need to reverse the values
+        // Gamepad 1 Drive
         if (gamepad1.left_stick_y < .1 && gamepad1.left_stick_y > -.1) { //deadband left stick
             leftY = 0;
         } else {
@@ -69,9 +70,21 @@ public class TeleOp extends OpMode {
             rightY = -gamepad1.right_stick_y;
         }
 
+        // Gamepad 2 Drive
+        if (gamepad2.left_stick_y < .1 && gamepad2.left_stick_y > -.1) { //deadband left stick
+            leftY = 0;
+        } else {
+            leftY = (gamepad1.left_stick_y)/2;
+        }
+        if (gamepad1.right_stick_y < .1 && gamepad1.right_stick_y > -.1) { //deadband right stick
+            rightY = 0;
+        } else {
+            rightY = (gamepad1.right_stick_y)/2;
+        }
+
         //set the power of the motors with the gamepad values
-        left.setPower(leftY * 1);
-        right.setPower(rightY * 1);
+        left.setPower(leftY * 1.0);
+        right.setPower(rightY * 1.0);
 
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
