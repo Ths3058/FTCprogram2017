@@ -74,12 +74,12 @@ public class TeleOp extends OpMode {
         if (gamepad2.left_stick_y < .1 && gamepad2.left_stick_y > -.1) { //deadband left stick
             leftY = 0;
         } else {
-            leftY = (gamepad1.left_stick_y)/2;
+            leftY = (gamepad2.left_stick_y)/2;
         }
-        if (gamepad1.right_stick_y < .1 && gamepad1.right_stick_y > -.1) { //deadband right stick
+        if (gamepad2.right_stick_y < .1 && gamepad2.right_stick_y > -.1) { //deadband right stick
             rightY = 0;
         } else {
-            rightY = (gamepad1.right_stick_y)/2;
+            rightY = (gamepad2.right_stick_y)/2;
         }
 
         //set the power of the motors with the gamepad values
