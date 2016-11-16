@@ -58,28 +58,20 @@ public class TeleOp extends OpMode {
         //get the values from the gamepads
         //note: pushing the stick all the way up returns -1,
         // so we need to reverse the values
-        // Gamepad 1 Drive
-        if (gamepad1.left_stick_y < .1 && gamepad1.left_stick_y > -.1) { //deadband left stick
-            leftY = 0;
-        } else {
+        //Gamepad 1 and 2 Drive
+        if (gamepad1.left_stick_y > .1 || gamepad1.left_stick_y < -.1) { //deadband left stick
             leftY = -gamepad1.left_stick_y;
-        }
-        if (gamepad1.right_stick_y < .1 && gamepad1.right_stick_y > -.1) { //deadband right stick
-            rightY = 0;
+        } else if (gamepad2.right_stick_y > .1 || gamepad2.right_stick_y < -.1) {
+            leftY = (gamepad2.right_stick_y)/2;
         } else {
-            rightY = -gamepad1.right_stick_y;
-        }
-
-        // Gamepad 2 Drive
-        if (gamepad2.left_stick_y < .1 && gamepad2.left_stick_y > -.1) { //deadband left stick
             leftY = 0;
-        } else {
-            leftY = (gamepad2.left_stick_y)/2;
         }
-        if (gamepad2.right_stick_y < .1 && gamepad2.right_stick_y > -.1) { //deadband right stick
-            rightY = 0;
+        if (gamepad1.right_stick_y > .1 || gamepad1.right_stick_y < -.1) { //deadband right stick
+            rightY = -gamepad1.right_stick_y;
+        } else if (gamepad2.left_stick_y > .1 || gamepad2.left_stick_y < -.1) {
+            rightY = (gamepad2.left_stick_y)/2;
         } else {
-            rightY = (gamepad2.right_stick_y)/2;
+            rightY = 0;
         }
 
         //set the power of the motors with the gamepad values
