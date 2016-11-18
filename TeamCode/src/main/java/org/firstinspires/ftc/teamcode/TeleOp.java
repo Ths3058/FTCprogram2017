@@ -59,16 +59,16 @@ public class TeleOp extends OpMode {
         //note: pushing the stick all the way up returns -1,
         // so we need to reverse the values
         //Gamepad 1 and 2 Drive
-        if (gamepad1.left_stick_y > .1 || gamepad1.left_stick_y < -.1) { //deadband left stick
+        if (gamepad1.left_stick_y > .1 || gamepad1.left_stick_y < -.1) { //Gamepad 1 deadband left stick
             leftY = -gamepad1.left_stick_y;
-        } else if (gamepad2.right_stick_y > .1 || gamepad2.right_stick_y < -.1) {
+        } else if (gamepad2.right_stick_y > .1 || gamepad2.right_stick_y < -.1) { //Gamepad 2 deadband right stick
             leftY = (gamepad2.right_stick_y)/2;
         } else {
             leftY = 0;
         }
-        if (gamepad1.right_stick_y > .1 || gamepad1.right_stick_y < -.1) { //deadband right stick
+        if (gamepad1.right_stick_y > .1 || gamepad1.right_stick_y < -.1) { //Gamepad 1 deadband right stick
             rightY = -gamepad1.right_stick_y;
-        } else if (gamepad2.left_stick_y > .1 || gamepad2.left_stick_y < -.1) {
+        } else if (gamepad2.left_stick_y > .1 || gamepad2.left_stick_y < -.1) { //Gamepad 2 deadband left stick
             rightY = (gamepad2.left_stick_y)/2;
         } else {
             rightY = 0;
@@ -78,16 +78,17 @@ public class TeleOp extends OpMode {
         left.setPower(leftY * 1.0);
         right.setPower(rightY * 1.0);
 
+        //display motor power on the screen
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
 
         // Vertical Ball Elevator and Sweeper
         if (gamepad1.right_bumper) {
-            lift.setPower(-.5);             // elevator up
+            lift.setPower(.25);             // elevator up
             sweep.setPower(-1);             // sweeper in
         } else {
             if (gamepad1.left_bumper) {
-                lift.setPower(.5);          // elevator down
+                lift.setPower(-.25);          // elevator down
                 sweep.setPower(1);          // sweeper out
             } else {
                 lift.setPower(0);           // elevator stop
@@ -97,26 +98,32 @@ public class TeleOp extends OpMode {
 
         // Ball Shooter
         if (gamepad1.right_trigger > 0) {
-            shootspeed(.9);
+            shootspeed(.9);                 // shoot
         } else {
-            shootspeed(0);
+            shootspeed(0);                  // stop
         }
 
         // Cap ball lift
         if (gamepad2.right_trigger > 0) {
-            caplift.setPower(.75);
+            caplift.setPower(.75);                  // cap ball lift up
         } else if (gamepad2.left_trigger > 0) {
-            caplift.setPower(-.75);
+            caplift.setPower(-.75);                 // cap ball lift down
         } else {
-            caplift.setPower(0);
+            caplift.setPower(0);                    // cap ball lift stop
         }
 
+        // Arms for holding cap ball
+        if (gamepad2.a) {
+            //arm_left
+        }
+
+        /*
         // Arm for holding cap ball lift arm up
         if (gamepad2.a) {
             arm.setPosition(0);
         } else if (gamepad2.b) {
             arm.setPosition(130);
-        }
+        }*/
     }
 
     //----------------------------------
