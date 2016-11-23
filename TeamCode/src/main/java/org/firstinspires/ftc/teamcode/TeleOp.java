@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * Created by Robotics.
@@ -23,10 +24,18 @@ public class TeleOp extends OpMode {
 
     // Servos
     private CRServo sweep;
-    private Servo arm;
+    //private Servo arm;
+    private Servo arm_left;
+    private Servo arm_right;
 
+    // Variavles
     private float leftY = 0;
     private float rightY = 0;
+    private boolean capOpen = false;
+    private boolean capClose = false;
+
+    // Loop cycle time stats variables
+    private ElapsedTime buttonTime = new ElapsedTime();  // Time into current state
 
     @Override
     public void init() {
@@ -40,14 +49,18 @@ public class TeleOp extends OpMode {
 
         //get references to the servos from the hardware map
         sweep = hardwareMap.crservo.get("sweep");
-        arm = hardwareMap.servo.get("arm");
+        //arm = hardwareMap.servo.get("arm");
+        arm_left = hardwareMap.servo.get("arm_left");
+        arm_right = hardwareMap.servo.get("arm_right");
 
         //reverse the right motor
         right.setDirection(DcMotor.Direction.REVERSE);
         shoot_right.setDirection(DcMotor.Direction.REVERSE);
 
         //set the initial positions for the servos
-        arm.setPosition(0);
+        //arm.setPosition(0);
+        arm_left.setPosition(0);
+        arm_right.setPosition(0);
 
         //set the initial power for the CRServos(continuous rotation servos)
         sweep.setPower(0);
@@ -98,7 +111,7 @@ public class TeleOp extends OpMode {
 
         // Ball Shooter
         if (gamepad1.right_trigger > 0) {
-            shootspeed(.9);                 // shoot
+            shootspeed(.8);                 // shoot
         } else {
             shootspeed(0);                  // stop
         }
@@ -114,7 +127,18 @@ public class TeleOp extends OpMode {
 
         // Arms for holding cap ball
         if (gamepad2.a) {
-            //arm_left
+            arm_left.setPosition(120);
+            capOpen = true;
+        } else if (gamepad2.b) {
+            arm_left.setPosition(0);
+            capClose = true;
+        }
+        if (capOpen == true && buttonTime.time() > 1.0) {
+            arm_right.setPosition(120);
+            capOpen = false;
+        } else if (capClose == true && buttonTime.time() > 1.0) {
+            arm_right.setPosition(0);
+            capClose = false;
         }
 
         /*

@@ -127,8 +127,8 @@ public class AutoRed extends OpMode {
                 setDrivePower(0.5, 0.5);
                 break;
             case Shoot:
-                shootspeed(.9);
-                lift.setPower(-.25);
+                shootspeed(.8);
+                lift.setPower(.25);
                 break;
             case FWD2:
                 setDrivePower(0.5, 0.5);

@@ -40,8 +40,8 @@ public class AutoRed2 extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(30); // fix distance
-    private final static double Fwd2count = distToEnc(30);
+    private final static double Fwd1count = distToEnc(26); // fix distance
+    private final static double Fwd2count = distToEnc(34);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -127,8 +127,8 @@ public class AutoRed2 extends OpMode {
                 setDrivePower(0.5, 0.5);
                 break;
             case Shoot:
-                shootspeed(.9);
-                lift.setPower(-.25);
+                shootspeed(.8);
+                lift.setPower(.25);
                 break;
             case FWD2:
                 setDrivePower(0.5, 0.5);
