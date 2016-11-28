@@ -101,11 +101,18 @@ public class TeleOp extends OpMode {
             sweep.setPower(-1);             // sweeper in
         } else {
             if (gamepad1.left_bumper) {
-                lift.setPower(-.25);          // elevator down
+                lift.setPower(-.25);        // elevator down
                 sweep.setPower(1);          // sweeper out
             } else {
                 lift.setPower(0);           // elevator stop
-                sweep.setPower(0);          // sweeper stop
+                // Independent Sweeper control
+                if (gamepad1.a) {
+                    sweep.setPower(.25);    // sweeper in
+                } else if (gamepad1.b) {
+                    sweep.setPower(-.25);   // sweeper out
+                } else {
+                    sweep.setPower(0);      // sweeper stop
+                }
             }
         }
 

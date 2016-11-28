@@ -1,17 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
 
 /**
@@ -20,24 +15,12 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
  * @author Ryan Kirkpatrick
  * @version 11/5/2016
  */
-@Autonomous(name = "Auto:Blue", group = "Autonomous")
-public class AutoBlue extends OpMode {
+@Autonomous(name = "Auto:Red", group = "Autonomous")
+public class AutoRed3 extends OpMode {
     private enum State {
         FWD1,
         Shoot,
-        TURNR1,
         FWD2,
-        TURNL1,
-        FWD3,
-        TURNR2,
-        FWD4,
-        Button1,
-        REV1,
-        TURNL3,
-        FWD5,
-        TURNR3,
-        FWD6,
-        Button2,
         done
     }
 
@@ -54,28 +37,16 @@ public class AutoBlue extends OpMode {
     private Servo arm;
     private CRServo sweep;
 
-    ModernRoboticsI2cRangeSensor rangeSensor;
-    ColorSensor colorSensor;
-
-    // hsvValues is an array that will hold the hue, saturation, and value information.
-    float hsvValues[] = {0F,0F,0F};
-
-    // values is a reference to the hsvValues array.
-    final float values[] = hsvValues;
-
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(26); // fix distance
-    private final static double Fwd2count = distToEnc(34);
+    private final static double Fwd1count = distToEnc(24); // fix distance
+    private final static double Fwd2count = distToEnc(30);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
     private double COUNTS = 0;
-
-    // bLedOn represents the state of the LED.
-    boolean bLedOn = true;
 
     @Override
     public void init() {
@@ -91,19 +62,12 @@ public class AutoBlue extends OpMode {
         arm = hardwareMap.servo.get("arm");
         sweep = hardwareMap.crservo.get("sweep");
 
-        //get references to the sensors from the hardware map
-        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
-        colorSensor = hardwareMap.colorSensor.get("sensor_color");
-
         //reverse the right motor
         right.setDirection(DcMotor.Direction.REVERSE);
         shoot_right.setDirection(DcMotor.Direction.REVERSE);
 
         //set the initial positions for the servos
         arm.setPosition(0);
-
-        // Set the LED in the beginning
-        colorSensor.enableLed(bLedOn);
 
         COUNTS = Fwd1count;
     }
@@ -122,29 +86,12 @@ public class AutoBlue extends OpMode {
 
     @Override
     public void loop() {
-        // convert the RGB values to HSV values.
-        Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
-
         // Send the current state info (state and time) back to first line of driver station telemetry.
         telemetry.addData("0", String.format("%4.1f %6s", mStateTime.time(), state.toString()));
         // Send the current encoder info (encoder counts left and right).
         telemetry.addData("ENC", String.format("L:R %d:%d", getLeftPosition(), getRightPosition()));
         // Send the current total counts.
         telemetry.addData("Total Target ", COUNTS);
-
-        // send the info back to driver station using telemetry function.
-        telemetry.addData("LED", bLedOn ? "On" : "Off");
-        //telemetry.addData("Clear", colorSensor.alpha());
-        telemetry.addData("Red  ", colorSensor.red());
-        telemetry.addData("Green", colorSensor.green());
-        telemetry.addData("Blue ", colorSensor.blue());
-        //telemetry.addData("Hue", hsvValues[0]);
-
-        //telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
-        //telemetry.addData("raw optical", rangeSensor.rawOptical());
-        telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-        telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
-        telemetry.update();
 
         // First switch statement
         switch (state) {
@@ -162,6 +109,14 @@ public class AutoBlue extends OpMode {
                     shootspeed(0);
                     COUNTS += Fwd2count;
                     mStateTime.reset();
+                    state = State.FWD2;
+                }
+                break;
+            case FWD2:
+                telemetry.addData("FWD2", 1);
+                if (getLeftPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    mStateTime.reset();
                     state = State.done;
                 }
                 break;
@@ -174,6 +129,9 @@ public class AutoBlue extends OpMode {
             case Shoot:
                 shootspeed(.8);
                 lift.setPower(.25);
+                break;
+            case FWD2:
+                setDrivePower(0.5, 0.5);
                 break;
             case done:
                 stop();
