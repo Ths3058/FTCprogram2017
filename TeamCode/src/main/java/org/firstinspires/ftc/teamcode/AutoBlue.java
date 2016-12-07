@@ -51,8 +51,10 @@ public class AutoBlue extends OpMode {
     private DcMotor shoot_left;
     private DcMotor shoot_right;
 
-    private Servo arm;
     private CRServo sweep;
+    private Servo arm;
+    private Servo button_left;
+    private Servo button_right;
 
     ModernRoboticsI2cRangeSensor rangeSensor;
     ColorSensor colorSensor;
@@ -66,8 +68,16 @@ public class AutoBlue extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(26); // fix distance
-    private final static double Fwd2count = distToEnc(34);
+    private final static double Fwd1count = distToEnc(24); // fix distance
+    private final static double TURNR1count = distToEnc(90);
+    private final static double FWD2count = distToEnc(24);
+    private final static double TURNL1count = distToEnc(90);
+    private final static double FWD3count = distToEnc(16);
+    private final static double TURNR2count = distToEnc(90);
+    private final static double REV1count = distToEnc(32);
+    private final static double TURNL3count = distToEnc(90);
+    private final static double FWD5count = distToEnc(48);
+    private final static double TURNR3count = distToEnc(90);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -113,11 +123,6 @@ public class AutoBlue extends OpMode {
         state = State.FWD1;
         setDrivePower(0, 0);
         mStateTime.reset();
-
-        //get references to the servos from the hardware map
-
-        //set initial servo positions
-
     }
 
     @Override
@@ -149,7 +154,6 @@ public class AutoBlue extends OpMode {
         // First switch statement
         switch (state) {
             case FWD1:
-                telemetry.addData("FWD1", 1);
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
@@ -157,10 +161,95 @@ public class AutoBlue extends OpMode {
                 }
                 break;
             case Shoot:
-                telemetry.addData("Shoot", 1);
                 if (mStateTime.time() >= 4) {
                     shootspeed(0);
-                    COUNTS += Fwd2count;
+                    COUNTS += TURNR1count;
+                    mStateTime.reset();
+                    state = State.TURNL1;
+                }
+                break;
+            case TURNR1:
+                if (getLeftPosition() > COUNTS) {
+                    COUNTS += FWD2count;
+                    mStateTime.reset();
+                    state = State.FWD2;
+                }
+                break;
+            case FWD2:
+                if (getRightPosition() > COUNTS) {
+                    COUNTS += TURNL1count;
+                    mStateTime.reset();
+                    state = State.TURNL1;
+                }
+                break;
+            case TURNL1:
+                if (getRightPosition() > COUNTS) {
+                    COUNTS += FWD3count;
+                    mStateTime.reset();
+                    state = State.FWD3;
+                }
+                break;
+            case FWD3:
+                if (getRightPosition() > COUNTS) {
+                    COUNTS += TURNR2count;
+                    mStateTime.reset();
+                    state = State.TURNR2;
+                }
+                break;
+            case TURNR2:
+                if (getLeftPosition() > COUNTS) {
+                    mStateTime.reset();
+                    state = State.FWD4;
+                }
+                break;
+            case FWD4:
+                if (rangeSensor.cmOptical() < 4) {
+                    mStateTime.reset();
+                    state = State.Button1;
+                }
+                break;
+            case Button1:
+                if (mStateTime.time() > 3) {
+                    COUNTS += REV1count;
+                    mStateTime.reset();
+                    state = State.REV1;
+                }
+                break;
+            case REV1:
+                if (getRightPosition() > COUNTS) {
+                    COUNTS += TURNL3count;
+                    mStateTime.reset();
+                    state = State.TURNL3;
+                }
+                break;
+            case TURNL3:
+                if (getRightPosition() > COUNTS) {
+                    COUNTS += FWD5count;
+                    mStateTime.reset();
+                    state = State.FWD5;
+                }
+                break;
+            case FWD5:
+                if (getRightPosition() > COUNTS) {
+                    COUNTS += TURNR3count;
+                    mStateTime.reset();
+                    state = State.TURNR3;
+                }
+                break;
+            case TURNR3:
+                if (getLeftPosition() > COUNTS) {
+                    mStateTime.reset();
+                    state = State.FWD6;
+                }
+                break;
+            case FWD6:
+                if (rangeSensor.cmOptical() < 4) {
+                    mStateTime.reset();
+                    state = State.Button2;
+                }
+                break;
+            case Button2:
+                if (mStateTime.time() > 3) {
                     mStateTime.reset();
                     state = State.done;
                 }
@@ -174,6 +263,53 @@ public class AutoBlue extends OpMode {
             case Shoot:
                 shootspeed(.8);
                 lift.setPower(.25);
+                break;
+            case TURNR1:
+                setDrivePower(0.5,-0.5);
+                break;
+            case FWD2:
+                setDrivePower(0.5,0.5);
+                break;
+            case TURNL1:
+                setDrivePower(-0.5,0.5);
+                break;
+            case FWD3:
+                setDrivePower(0.5,0.5);
+                break;
+            case TURNR2:
+                setDrivePower(0.5,-0.5);
+                break;
+            case FWD4:
+                setDrivePower(0.5,0.5);
+                break;
+            case Button1:
+                if (colorSensor.blue() > 6) {
+                    button_left.setPosition(180);
+                } else if (colorSensor.red() > 3) {
+                    button_right.setPosition(0);
+                }
+                break;
+            case REV1:
+                setDrivePower(-0.5,-0.5);
+                break;
+            case TURNL3:
+                setDrivePower(-0.5,0.5);
+                break;
+            case FWD5:
+                setDrivePower(0.5,0.5);
+                break;
+            case TURNR3:
+                setDrivePower(0.5,-0.5);
+                break;
+            case FWD6:
+                setDrivePower(0.5,0.5);
+                break;
+            case Button2:
+                if (colorSensor.blue() > 6) {
+                    button_left.setPosition(180);
+                } else if (colorSensor.red() > 3) {
+                    button_right.setPosition(0);
+                }
                 break;
             case done:
                 stop();

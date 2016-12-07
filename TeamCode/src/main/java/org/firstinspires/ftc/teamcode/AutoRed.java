@@ -114,11 +114,6 @@ public class AutoRed extends OpMode {
         state = State.FWD1;
         setDrivePower(0, 0);
         mStateTime.reset();
-
-        //get references to the servos from the hardware map
-
-        //set initial servo positions
-
     }
 
     @Override

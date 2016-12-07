@@ -24,9 +24,11 @@ public class TeleOp extends OpMode {
 
     // Servos
     private CRServo sweep;
-    //private Servo arm;
+    private Servo arm;
     private Servo arm_left;
     private Servo arm_right;
+    private Servo button_left;
+    private Servo button_right;
 
     // Variavles
     private float leftY = 0;
@@ -49,18 +51,22 @@ public class TeleOp extends OpMode {
 
         //get references to the servos from the hardware map
         sweep = hardwareMap.crservo.get("sweep");
-        //arm = hardwareMap.servo.get("arm");
+        arm = hardwareMap.servo.get("arm");
         arm_left = hardwareMap.servo.get("arm_left");
         arm_right = hardwareMap.servo.get("arm_right");
+        button_left = hardwareMap.servo.get("button_left");
+        button_right = hardwareMap.servo.get("button_right");
 
         //reverse the right motor
         right.setDirection(DcMotor.Direction.REVERSE);
         shoot_right.setDirection(DcMotor.Direction.REVERSE);
 
         //set the initial positions for the servos
-        //arm.setPosition(0);
-        arm_left.setPosition(0);
+        arm.setPosition(0);
+        arm_left.setPosition(130);
         arm_right.setPosition(0);
+        button_left.setPosition(180);
+        button_right.setPosition(0);
 
         //set the initial power for the CRServos(continuous rotation servos)
         sweep.setPower(0);
@@ -95,6 +101,10 @@ public class TeleOp extends OpMode {
         telemetry.addData("Left Power", leftY);
         telemetry.addData("Right Power", rightY);
 
+        //telemetry.addData("CapOpen", capOpen);
+        //telemetry.addData("CapClose", capClose);
+        //telemetry.addData("Time", buttonTime.time());
+
         // Vertical Ball Elevator and Sweeper
         if (gamepad1.right_bumper) {
             lift.setPower(.25);             // elevator up
@@ -106,10 +116,10 @@ public class TeleOp extends OpMode {
             } else {
                 lift.setPower(0);           // elevator stop
                 // Independent Sweeper control
-                if (gamepad1.a) {
-                    sweep.setPower(.25);    // sweeper in
-                } else if (gamepad1.b) {
-                    sweep.setPower(-.25);   // sweeper out
+                if (gamepad1.x) {
+                    sweep.setPower(-1);     // sweeper in
+                } else if (gamepad1.y) {
+                    sweep.setPower(1);      // sweeper out
                 } else {
                     sweep.setPower(0);      // sweeper stop
                 }
@@ -123,6 +133,15 @@ public class TeleOp extends OpMode {
             shootspeed(0);                  // stop
         }
 
+        // Button Pusher
+        if (gamepad1.a) {
+            button_left.setPosition(0);
+            button_right.setPosition(180);
+        } else if (gamepad1.b) {
+            button_left.setPosition(180);
+            button_right.setPosition(0);
+        }
+
         // Cap ball lift
         if (gamepad2.right_trigger > 0) {
             caplift.setPower(.75);                  // cap ball lift up
@@ -133,28 +152,29 @@ public class TeleOp extends OpMode {
         }
 
         // Arms for holding cap ball
-        if (gamepad2.a) {
-            arm_left.setPosition(120);
+        if (gamepad2.a && !capOpen) {
+            arm_right.setPosition(120);
+            buttonTime.reset();
             capOpen = true;
-        } else if (gamepad2.b) {
-            arm_left.setPosition(0);
+        } else if (gamepad2.b && !capClose) {
+            arm_right.setPosition(0);
+            buttonTime.reset();
             capClose = true;
         }
-        if (capOpen == true && buttonTime.time() > 1.0) {
-            arm_right.setPosition(120);
+        if (capOpen && buttonTime.time() > 1.0) {
+            arm_left.setPosition(0);
             capOpen = false;
-        } else if (capClose == true && buttonTime.time() > 1.0) {
-            arm_right.setPosition(0);
+        } else if (capClose && buttonTime.time() > 1.0) {
+            arm_left.setPosition(130);
             capClose = false;
         }
 
-        /*
         // Arm for holding cap ball lift arm up
-        if (gamepad2.a) {
+        if (gamepad2.x) {
             arm.setPosition(0);
-        } else if (gamepad2.b) {
+        } else if (gamepad2.y) {
             arm.setPosition(130);
-        }*/
+        }
     }
 
     //----------------------------------

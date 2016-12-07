@@ -15,8 +15,8 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
  * @author Ryan Kirkpatrick
  * @version 11/5/2016
  */
-@Autonomous(name = "Auto:Red", group = "Autonomous")
-public class AutoRed3 extends OpMode {
+@Autonomous(name = "Auto:1", group = "Autonomous")
+public class Auto extends OpMode {
     private enum State {
         FWD1,
         Shoot,
@@ -40,8 +40,8 @@ public class AutoRed3 extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(24); // fix distance
-    private final static double Fwd2count = distToEnc(30);
+    private final static double Fwd1count = distToEnc(26); // fix distance
+    private final static double Fwd2count = distToEnc(34);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
