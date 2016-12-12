@@ -20,5 +20,5 @@ class StaticFunctions {
     // Parameters degrees
     // Return encoder count
     //--------------------------------------------------------------------------
-    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*1000); } // 2860, 2500
+    static int degreesToEnc(int degrees) { return (int)(degrees/90.0*1500); } // 2860, 2500
 }

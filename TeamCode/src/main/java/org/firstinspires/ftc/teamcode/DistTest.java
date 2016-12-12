@@ -55,7 +55,7 @@ public class DistTest extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(12); // fix distance
+    private final static double Fwd1count = distToEnc(12);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state

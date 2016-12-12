@@ -22,24 +22,10 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
  * @author Ryan Kirkpatrick
  * @version 11/5/2016
  */
-@Autonomous(name = "Auto:Blue", group = "Autonomous")
-public class AutoBlue extends OpMode {
+@Autonomous(name = "RotTest", group = "Autonomous")
+public class RotTest extends OpMode {
     private enum State {
-        FWD1,
-        Shoot,
-        TURNR1,
-        FWD2,
         TURNL1,
-        FWD3,
-        TURNR2,
-        FWD4,
-        Button1,
-        REV1,
-        TURNL3,
-        FWD5,
-        TURNR3,
-        FWD6,
-        Button2,
         done
     }
 
@@ -70,16 +56,7 @@ public class AutoBlue extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(24);
-    private final static double TURNR1count = degreesToEnc(90);
-    private final static double FWD2count = distToEnc(24);
-    private final static double TURNL1count = degreesToEnc(90);
-    private final static double FWD3count = distToEnc(16);
-    private final static double TURNR2count = degreesToEnc(90);
-    private final static double REV1count = distToEnc(32);
-    private final static double TURNL3count = degreesToEnc(90);
-    private final static double FWD5count = distToEnc(48);
-    private final static double TURNR3count = degreesToEnc(90);
+    private final static double TurnL1count = degreesToEnc(180);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -87,7 +64,7 @@ public class AutoBlue extends OpMode {
     private double COUNTS = 0;
 
     // bLedOn represents the state of the LED.
-    boolean bLedOn = false;
+    boolean bLedOn = true;
 
     @Override
     public void init() {
@@ -117,12 +94,12 @@ public class AutoBlue extends OpMode {
         // Set the LED in the beginning
         colorSensor.enableLed(bLedOn);
 
-        COUNTS = Fwd1count;
+        COUNTS = TurnL1count;
     }
 
     @Override
     public void start() {
-        state = State.FWD1;
+        state = State.TURNL1;
         setDrivePower(0, 0);
         mStateTime.reset();
     }
@@ -155,114 +132,8 @@ public class AutoBlue extends OpMode {
 
         // First switch statement
         switch (state) {
-            case FWD1:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    mStateTime.reset();
-                    state = State.Shoot;
-                }
-                break;
-            case Shoot:
-                if (mStateTime.time() >= 4) {
-                    shootspeed(0);
-                    COUNTS += TURNR1count;
-                    mStateTime.reset();
-                    state = State.TURNL1;
-                }
-                break;
-            case TURNR1:
-                if (getLeftPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += FWD2count;
-                    mStateTime.reset();
-                    state = State.FWD2;
-                }
-                break;
-            case FWD2:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += TURNL1count;
-                    mStateTime.reset();
-                    state = State.TURNL1;
-                }
-                break;
             case TURNL1:
                 if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += FWD3count;
-                    mStateTime.reset();
-                    state = State.FWD3;
-                }
-                break;
-            case FWD3:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += TURNR2count;
-                    mStateTime.reset();
-                    state = State.TURNR2;
-                }
-                break;
-            case TURNR2:
-                if (getLeftPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    mStateTime.reset();
-                    state = State.FWD4;
-                }
-                break;
-            case FWD4:
-                if (rangeSensor.cmOptical() < 4) {
-                    setDrivePower(0, 0);
-                    mStateTime.reset();
-                    state = State.Button1;
-                }
-                break;
-            case Button1:
-                if (mStateTime.time() > 3) {
-                    COUNTS += REV1count;
-                    mStateTime.reset();
-                    state = State.REV1;
-                }
-                break;
-            case REV1:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += TURNL3count;
-                    mStateTime.reset();
-                    state = State.TURNL3;
-                }
-                break;
-            case TURNL3:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += FWD5count;
-                    mStateTime.reset();
-                    state = State.FWD5;
-                }
-                break;
-            case FWD5:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += TURNR3count;
-                    mStateTime.reset();
-                    state = State.TURNR3;
-                }
-                break;
-            case TURNR3:
-                if (getLeftPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    mStateTime.reset();
-                    state = State.FWD6;
-                }
-                break;
-            case FWD6:
-                if (rangeSensor.cmOptical() < 4) {
-                    setDrivePower(0, 0);
-                    mStateTime.reset();
-                    state = State.Button2;
-                }
-                break;
-            case Button2:
-                if (mStateTime.time() > 3) {
                     mStateTime.reset();
                     state = State.done;
                 }
@@ -270,71 +141,11 @@ public class AutoBlue extends OpMode {
         }
 
         switch (state) {
-            case FWD1:
-                setDrivePower(0.5, 0.5);
-                break;
-            case Shoot:
-                shootspeed(.8);
-                lift.setPower(.25);
-                break;
-            case TURNR1:
-                setDrivePower(0.5,-0.5);
-                break;
-            case FWD2:
-                setDrivePower(0.5,0.5);
-                break;
             case TURNL1:
-                setDrivePower(-0.5,0.5);
-                break;
-            case FWD3:
-                setDrivePower(0.5,0.5);
-                break;
-            case TURNR2:
-                setDrivePower(0.5,-0.5);
-                break;
-            case FWD4:
-                setDrivePower(0.5,0.5);
-                break;
-            case Button1:
-                if (colorSensor.blue() > 6) {
-                    button_left.setPosition(180);
-                } else if (colorSensor.red() > 3) {
-                    button_right.setPosition(0);
-                }
-                if (mStateTime.time() > 2.5) {
-                    button_left.setPosition(0);
-                    button_right.setPosition(180);
-                }
-                break;
-            case REV1:
-                setDrivePower(-0.5,-0.5);
-                break;
-            case TURNL3:
-                setDrivePower(-0.5,0.5);
-                break;
-            case FWD5:
-                setDrivePower(0.5,0.5);
-                break;
-            case TURNR3:
-                setDrivePower(0.5,-0.5);
-                break;
-            case FWD6:
-                setDrivePower(0.5,0.5);
-                break;
-            case Button2:
-                if (colorSensor.blue() > 6) {
-                    button_left.setPosition(180);
-                } else if (colorSensor.red() > 3) {
-                    button_right.setPosition(0);
-                }
-                if (mStateTime.time() > 2.5) {
-                    button_left.setPosition(0);
-                    button_right.setPosition(180);
-                }
+                setDrivePower(0.5, -0.5);
                 break;
             case done:
                 stop();
-                break;
         }
     }
 
