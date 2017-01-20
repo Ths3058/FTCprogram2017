@@ -13,6 +13,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+import java.io.IOException;
+
+import static org.firstinspires.ftc.teamcode.StaticFunctions.degreesToEnc;
 import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
 
 /**
@@ -21,23 +24,21 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
  * @author Ryan Kirkpatrick
  * @version 11/5/2016
  */
-@Autonomous(name = "Auto:Red", group = "Autonomous")
+@Autonomous(name = "Red1", group = "Autonomous")
 public class AutoRed extends OpMode {
     private enum State {
         FWD1,
         Shoot,
         TURNL1,
         FWD2,
-        TURNR1,
-        FWD3,
         TURNL2,
-        FWD4,
+        FWD3,
         Button1,
         REV1,
-        TURNR3,
-        FWD5,
+        TURNR1,
+        FWD4,
         TURNL3,
-        FWD6,
+        FWD5,
         Button2,
         done
     }
@@ -52,8 +53,10 @@ public class AutoRed extends OpMode {
     private DcMotor shoot_left;
     private DcMotor shoot_right;
 
-    private Servo arm;
     private CRServo sweep;
+    private Servo arm;
+    private Servo button_left;
+    private Servo button_right;
 
     ModernRoboticsI2cRangeSensor rangeSensor;
     ColorSensor colorSensor;
@@ -67,8 +70,19 @@ public class AutoRed extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(26); // fix distance
-    private final static double Fwd2count = distToEnc(34);
+    private final static double Fwd1count = distToEnc(24);
+    private final static double Shoottime = 4; // in seconds
+    private final static double TURNL1count = degreesToEnc(45);
+    private final static double FWD2count = distToEnc(62);
+    private final static double TURNL2count = degreesToEnc(91);
+    private final static double FWD3dist = 24; // in cm
+    private final static double Button1time = 3.5; // in seconds
+    private final static double REV1count = distToEnc(24);
+    private final static double TURNR1count = degreesToEnc(75);
+    private final static double FWD4count = distToEnc(60);
+    private final static double TURNL3count = degreesToEnc(140);
+    private final static double FWD5dist = 24; // in cm
+    private final static double Button2time = 3.5; //in seconds
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
@@ -76,7 +90,7 @@ public class AutoRed extends OpMode {
     private double COUNTS = 0;
 
     // bLedOn represents the state of the LED.
-    boolean bLedOn = true;
+    boolean bLedOn = false;
 
     @Override
     public void init() {
@@ -91,6 +105,8 @@ public class AutoRed extends OpMode {
         //get references to the servos from the hardware map
         arm = hardwareMap.servo.get("arm");
         sweep = hardwareMap.crservo.get("sweep");
+        button_left = hardwareMap.servo.get("button_left");
+        button_right = hardwareMap.servo.get("button_right");
 
         //get references to the sensors from the hardware map
         rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
@@ -102,11 +118,16 @@ public class AutoRed extends OpMode {
 
         //set the initial positions for the servos
         arm.setPosition(0);
+        button_right.setPosition(0);
+        button_left.setPosition(0);
 
         // Set the LED in the beginning
         colorSensor.enableLed(bLedOn);
 
         COUNTS = Fwd1count;
+        /*if (getRightPosition() > 0 || getLeftPosition() > 0) {
+            throw new Error("Restart robot to reset encoders.");
+        }*/
     }
 
     @Override
@@ -145,7 +166,6 @@ public class AutoRed extends OpMode {
         // First switch statement
         switch (state) {
             case FWD1:
-                telemetry.addData("FWD1", 1);
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
@@ -153,10 +173,91 @@ public class AutoRed extends OpMode {
                 }
                 break;
             case Shoot:
-                telemetry.addData("Shoot", 1);
-                if (mStateTime.time() >= 4) {
+                if (mStateTime.time() > Shoottime) {
                     shootspeed(0);
-                    COUNTS += Fwd2count;
+                    lift.setPower(0);
+                    COUNTS = getRightPosition() + TURNL1count;
+                    mStateTime.reset();
+                    state = State.TURNL1;
+                }
+                break;
+            case TURNL1:
+                if (getRightPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    COUNTS = getRightPosition() + FWD2count;
+                    mStateTime.reset();
+                    state = State.FWD2;
+                }
+                break;
+            case FWD2:
+                if (getLeftPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    COUNTS = getLeftPosition() + TURNL2count;
+                    mStateTime.reset();
+                    state = State.TURNL2;
+                }
+                break;
+            case TURNL2:
+                if (getLeftPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    mStateTime.reset();
+                    state = State.FWD3;
+                }
+                break;
+            case FWD3:
+                if (rangeSensor.getDistance(DistanceUnit.CM) < FWD3dist) {
+                    setDrivePower(0, 0);
+                    mStateTime.reset();
+                    state = State.Button1;
+                }
+                break;
+            case Button1:
+                if (mStateTime.time() > Button1time) {
+                    COUNTS = getRightPosition() - REV1count;
+                    mStateTime.reset();
+                    state = State.REV1;
+                }
+                break;
+            case REV1:
+                if (getRightPosition() < COUNTS) {
+                    setDrivePower(0, 0);
+                    COUNTS = getLeftPosition() + TURNR1count;
+                    mStateTime.reset();
+                    state = State.TURNR1;
+                }
+                break;
+            case TURNR1:
+                if (getLeftPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    COUNTS = getRightPosition() + FWD4count;
+                    mStateTime.reset();
+                    state = State.FWD4;
+                }
+                break;
+            case FWD4:
+                if (getRightPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    COUNTS = getRightPosition() + TURNL3count;
+                    mStateTime.reset();
+                    state = State.TURNL3;
+                }
+                break;
+            case TURNL3:
+                if (getRightPosition() > COUNTS) {
+                    setDrivePower(0, 0);
+                    mStateTime.reset();
+                    state = State.FWD5;
+                }
+                break;
+            case FWD5:
+                if (rangeSensor.getDistance(DistanceUnit.CM) < FWD5dist) {
+                    setDrivePower(0, 0);
+                    mStateTime.reset();
+                    state = State.Button2;
+                }
+                break;
+            case Button2:
+                if (mStateTime.time() > Button2time) {
                     mStateTime.reset();
                     state = State.done;
                 }
@@ -170,6 +271,55 @@ public class AutoRed extends OpMode {
             case Shoot:
                 shootspeed(.8);
                 lift.setPower(.25);
+                break;
+            case TURNL1:
+                setDrivePower(-0.35,0.35);
+                break;
+            case FWD2:
+                setDrivePower(0.5,0.5);
+                break;
+            case TURNL2:
+                setDrivePower(-0.35,0.35);
+                break;
+            case FWD3:
+                setDrivePower(0.5,0.5);
+                break;
+            case Button1:
+                if (colorSensor.blue() > 6) {
+                    button_left.setPosition(180);
+                } else if (colorSensor.red() > 3) {
+                    button_right.setPosition(180);
+                }
+                if (mStateTime.time() > 2.5) {
+                    button_left.setPosition(0);
+                    button_right.setPosition(0);
+                }
+                break;
+            case REV1:
+                setDrivePower(-0.5,-0.5);
+                break;
+            case TURNR1:
+                setDrivePower(0.35,-0.35);
+                break;
+            case FWD4:
+                setDrivePower(0.5,0.5);
+                break;
+            case TURNL3:
+                setDrivePower(-0.35,0.35);
+                break;
+            case FWD5:
+                setDrivePower(0.5,0.5);
+                break;
+            case Button2:
+                if (colorSensor.blue() > 6) {
+                    button_left.setPosition(180);
+                } else if (colorSensor.red() > 3) {
+                    button_right.setPosition(180);
+                }
+                if (mStateTime.time() > 2.5) {
+                    button_left.setPosition(0);
+                    button_right.setPosition(0);
+                }
                 break;
             case done:
                 stop();

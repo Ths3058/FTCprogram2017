@@ -55,12 +55,15 @@ public class DistTest extends OpMode {
     private State state;        // Current State Machine State.
 
     //set counts for each state
-    private final static double Fwd1count = distToEnc(12);
+    private final static double Fwd1count = distToEnc(36);
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
     private double COUNTS = 0;
+    private double deceltest = 0;
+    private boolean accel = false;
+    private boolean decel = false;
 
     // bLedOn represents the state of the LED.
     boolean bLedOn = true;
@@ -109,24 +112,28 @@ public class DistTest extends OpMode {
         Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
 
         // Send the current state info (state and time) back to first line of driver station telemetry.
-        telemetry.addData("0", String.format("%4.1f %6s", mStateTime.time(), state.toString()));
+        //telemetry.addData("0", String.format("%4.1f %6s", mStateTime.time(), state.toString()));
         // Send the current encoder info (encoder counts left and right).
         telemetry.addData("ENC", String.format("L:R %d:%d", getLeftPosition(), getRightPosition()));
         // Send the current total counts.
         telemetry.addData("Total Target ", COUNTS);
 
         // send the info back to driver station using telemetry function.
-        telemetry.addData("LED", bLedOn ? "On" : "Off");
+        //telemetry.addData("LED", bLedOn ? "On" : "Off");
         //telemetry.addData("Clear", colorSensor.alpha());
-        telemetry.addData("Red  ", colorSensor.red());
-        telemetry.addData("Green", colorSensor.green());
-        telemetry.addData("Blue ", colorSensor.blue());
+        //telemetry.addData("Red  ", colorSensor.red());
+        //telemetry.addData("Green", colorSensor.green());
+        //telemetry.addData("Blue ", colorSensor.blue());
         //telemetry.addData("Hue", hsvValues[0]);
 
         //telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
         //telemetry.addData("raw optical", rangeSensor.rawOptical());
-        telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-        telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+        //telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
+        //telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+
+        telemetry.addData("Accel", "%b", accel);
+        telemetry.addData("Decel", "%b", decel);
+        telemetry.addData("Test", "%.2f", deceltest);
         telemetry.update();
 
         // First switch statement
@@ -142,7 +149,13 @@ public class DistTest extends OpMode {
 
         switch (state) {
             case FWD1:
-                setDrivePower(0.5, 0.5);
+                if (getRightPosition() < 250) {
+                    accelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(0.3, 0.3);
+                }
                 break;
         }
     }
@@ -170,6 +183,45 @@ public class DistTest extends OpMode {
     {
         left.setPower(leftPower);
         right.setPower(rightPower);
+    }
+
+    //--------------------------------------------------------------------------
+    // accelerateR( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void accelerateR(double leftPower, double rightPower)
+    {
+        double initL = getLeftPosition();
+        setDrivePower(leftPower*((getLeftPosition()-initL)+250/500), rightPower*((getLeftPosition()-initL+250)/500));
+    }
+
+    //--------------------------------------------------------------------------
+    // accelerateL( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void accelerateL(double leftPower, double rightPower)
+    {
+        double initR = getRightPosition();
+        accel = true;
+        setDrivePower(leftPower*((getRightPosition()-initR+250)/500), rightPower*((getRightPosition()-initR+250)/500));
+    }
+
+    //--------------------------------------------------------------------------
+    // decelerateR( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void decelerateR(double leftPower, double rightPower)
+    {
+        double initL = getLeftPosition();
+        setDrivePower(leftPower*((COUNTS-getLeftPosition()+250)/500), rightPower*((COUNTS-getLeftPosition()+250)/500));
+    }
+
+    //--------------------------------------------------------------------------
+    // decelerateL( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void decelerateL(double leftPower, double rightPower)
+    {
+        //double initR = getRightPosition();
+        decel = true;
+        setDrivePower(leftPower*((COUNTS-getRightPosition()+200)/1000), rightPower*((COUNTS-getRightPosition()+200)/1000));
+        deceltest = leftPower*((COUNTS-getRightPosition()+200)/1000);
     }
 
     //----------------------------------

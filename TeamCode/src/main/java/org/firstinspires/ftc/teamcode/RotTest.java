@@ -64,7 +64,7 @@ public class RotTest extends OpMode {
     private double COUNTS = 0;
 
     // bLedOn represents the state of the LED.
-    boolean bLedOn = true;
+    boolean bLedOn = false;
 
     @Override
     public void init() {

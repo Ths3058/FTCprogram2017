@@ -19,6 +19,7 @@ public class TeleOp extends OpMode {
     private DcMotor right;
     private DcMotor lift;
     private DcMotor caplift;
+    //private DcMotor caplift2;
     private DcMotor shoot_left;
     private DcMotor shoot_right;
 
@@ -35,9 +36,11 @@ public class TeleOp extends OpMode {
     private float rightY = 0;
     private boolean capOpen = false;
     private boolean capClose = false;
+    private boolean pusherout = false;
 
     // Loop cycle time stats variables
     private ElapsedTime buttonTime = new ElapsedTime();  // Time into current state
+    private ElapsedTime pusherTime = new ElapsedTime();
 
     @Override
     public void init() {
@@ -46,6 +49,7 @@ public class TeleOp extends OpMode {
         right = hardwareMap.dcMotor.get("right");
         lift = hardwareMap.dcMotor.get("lift");
         caplift = hardwareMap.dcMotor.get("caplift");
+        //caplift2 = hardwareMap.dcMotor.get("caplift2");
         shoot_left = hardwareMap.dcMotor.get("shoot_left");
         shoot_right = hardwareMap.dcMotor.get("shoot_right");
 
@@ -65,7 +69,7 @@ public class TeleOp extends OpMode {
         arm.setPosition(0);
         arm_left.setPosition(130);
         arm_right.setPosition(0);
-        button_left.setPosition(180);
+        button_left.setPosition(0);
         button_right.setPosition(0);
 
         //set the initial power for the CRServos(continuous rotation servos)
@@ -79,16 +83,16 @@ public class TeleOp extends OpMode {
         // so we need to reverse the values
         //Gamepad 1 and 2 Drive
         if (gamepad1.left_stick_y > .1 || gamepad1.left_stick_y < -.1) { //Gamepad 1 deadband left stick
-            leftY = -gamepad1.left_stick_y;
+            leftY = -(float)(gamepad1.left_stick_y*0.75);
         } else if (gamepad2.right_stick_y > .1 || gamepad2.right_stick_y < -.1) { //Gamepad 2 deadband right stick
-            leftY = (gamepad2.right_stick_y)/2;
+            leftY = (float)(gamepad2.right_stick_y*0.4);
         } else {
             leftY = 0;
         }
         if (gamepad1.right_stick_y > .1 || gamepad1.right_stick_y < -.1) { //Gamepad 1 deadband right stick
-            rightY = -gamepad1.right_stick_y;
+            rightY = -(float)(gamepad1.right_stick_y*0.75);
         } else if (gamepad2.left_stick_y > .1 || gamepad2.left_stick_y < -.1) { //Gamepad 2 deadband left stick
-            rightY = (gamepad2.left_stick_y)/2;
+            rightY = (float)(gamepad2.left_stick_y*0.4);
         } else {
             rightY = 0;
         }
@@ -104,6 +108,7 @@ public class TeleOp extends OpMode {
         //telemetry.addData("CapOpen", capOpen);
         //telemetry.addData("CapClose", capClose);
         //telemetry.addData("Time", buttonTime.time());
+        //telemetry.addData("Pusher Time", pusherTime.time());
 
         // Vertical Ball Elevator and Sweeper
         if (gamepad1.right_bumper) {
@@ -134,12 +139,16 @@ public class TeleOp extends OpMode {
         }
 
         // Button Pusher
-        if (gamepad1.a) {
-            button_left.setPosition(0);
-            button_right.setPosition(180);
-        } else if (gamepad1.b) {
+        if (gamepad1.a && !pusherout && pusherTime.time() > 0.5) {
             button_left.setPosition(180);
+            button_right.setPosition(180);
+            pusherout = true;
+            pusherTime.reset();
+        } else if (gamepad1.a && pusherout && pusherTime.time() > 0.5){
+            button_left.setPosition(0);
             button_right.setPosition(0);
+            pusherout = false;
+            pusherTime.reset();
         }
 
         // Cap ball lift

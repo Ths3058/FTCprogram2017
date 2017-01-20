@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+import java.io.IOException;
+
 import static org.firstinspires.ftc.teamcode.StaticFunctions.degreesToEnc;
 import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
 
@@ -22,23 +24,21 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
  * @author Ryan Kirkpatrick
  * @version 11/5/2016
  */
-@Autonomous(name = "Auto:Blue", group = "Autonomous")
+@Autonomous(name = "Blue1", group = "Autonomous")
 public class AutoBlue extends OpMode {
     private enum State {
         FWD1,
         Shoot,
         TURNR1,
         FWD2,
-        TURNL1,
-        FWD3,
         TURNR2,
-        FWD4,
+        FWD3,
         Button1,
         REV1,
-        TURNL3,
-        FWD5,
+        TURNL1,
+        FWD4,
         TURNR3,
-        FWD6,
+        FWD5,
         Button2,
         done
     }
@@ -71,20 +71,38 @@ public class AutoBlue extends OpMode {
 
     //set counts for each state
     private final static double Fwd1count = distToEnc(24);
-    private final static double TURNR1count = degreesToEnc(90);
-    private final static double FWD2count = distToEnc(24);
-    private final static double TURNL1count = degreesToEnc(90);
-    private final static double FWD3count = distToEnc(16);
-    private final static double TURNR2count = degreesToEnc(90);
-    private final static double REV1count = distToEnc(32);
-    private final static double TURNL3count = degreesToEnc(90);
-    private final static double FWD5count = distToEnc(48);
-    private final static double TURNR3count = degreesToEnc(90);
+    private final static double Shoottime = 4; // in seconds
+    private final static double TURNR1count = degreesToEnc(45);
+    private final static double FWD2count = distToEnc(63);
+    private final static double TURNR2count = degreesToEnc(82);
+    private final static double FWD3dist = 22; // in cm
+    private final static double Button1time = 3.5; // in seconds
+    private final static double REV1count = distToEnc(24);
+    private final static double TURNL1count = degreesToEnc(75);
+    private final static double FWD4count = distToEnc(60);
+    private final static double TURNR3count = degreesToEnc(150);
+    private final static double FWD5dist = 22; // in cm
+    private final static double Button2time = 3.5; //in seconds
+    /*private final static double Fwd1count = distToEnc(24);
+    private final static double Shoottime = 4; // in seconds
+    private final static double TURNR1count = degreesToEnc(45);
+    private final static double FWD2count = distToEnc(62);
+    private final static double TURNR2count = degreesToEnc(91);
+    private final static double FWD3dist = 24; // in cm
+    private final static double Button1time = 3.5; // in seconds
+    private final static double REV1count = distToEnc(24);
+    private final static double TURNL1count = degreesToEnc(75);
+    private final static double FWD4count = distToEnc(60);
+    private final static double TURNR3count = degreesToEnc(140);
+    private final static double FWD5dist = 24; // in cm
+    private final static double Button2time = 3.5; //in seconds*/
 
     // Loop cycle time stats variables
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
     private double COUNTS = 0;
+    private double initR = 0;
+    private double initL = 0;
 
     // bLedOn represents the state of the LED.
     boolean bLedOn = false;
@@ -102,6 +120,8 @@ public class AutoBlue extends OpMode {
         //get references to the servos from the hardware map
         arm = hardwareMap.servo.get("arm");
         sweep = hardwareMap.crservo.get("sweep");
+        button_left = hardwareMap.servo.get("button_left");
+        button_right = hardwareMap.servo.get("button_right");
 
         //get references to the sensors from the hardware map
         rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
@@ -113,11 +133,16 @@ public class AutoBlue extends OpMode {
 
         //set the initial positions for the servos
         arm.setPosition(0);
+        button_right.setPosition(0);
+        button_left.setPosition(0);
 
         // Set the LED in the beginning
         colorSensor.enableLed(bLedOn);
 
         COUNTS = Fwd1count;
+        /*if (getRightPosition() > 0 || getLeftPosition() > 0) {
+            throw new Error("Restart robot to reset encoders.");
+        }*/
     }
 
     @Override
@@ -163,17 +188,20 @@ public class AutoBlue extends OpMode {
                 }
                 break;
             case Shoot:
-                if (mStateTime.time() >= 4) {
+                if (mStateTime.time() > Shoottime) {
                     shootspeed(0);
-                    COUNTS += TURNR1count;
+                    lift.setPower(0);
+                    COUNTS = getLeftPosition() + TURNR1count;
+                    initL = getLeftPosition();
                     mStateTime.reset();
-                    state = State.TURNL1;
+                    state = State.TURNR1;
                 }
                 break;
             case TURNR1:
                 if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += FWD2count;
+                    COUNTS = getRightPosition() + FWD2count;
+                    initR = getRightPosition();
                     mStateTime.reset();
                     state = State.FWD2;
                 }
@@ -181,23 +209,8 @@ public class AutoBlue extends OpMode {
             case FWD2:
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += TURNL1count;
-                    mStateTime.reset();
-                    state = State.TURNL1;
-                }
-                break;
-            case TURNL1:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += FWD3count;
-                    mStateTime.reset();
-                    state = State.FWD3;
-                }
-                break;
-            case FWD3:
-                if (getRightPosition() > COUNTS) {
-                    setDrivePower(0, 0);
-                    COUNTS += TURNR2count;
+                    COUNTS = getLeftPosition() + TURNR2count;
+                    initL = getLeftPosition();
                     mStateTime.reset();
                     state = State.TURNR2;
                 }
@@ -206,43 +219,47 @@ public class AutoBlue extends OpMode {
                 if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
-                    state = State.FWD4;
+                    state = State.FWD3;
                 }
                 break;
-            case FWD4:
-                if (rangeSensor.cmOptical() < 4) {
+            case FWD3:
+                if (rangeSensor.getDistance(DistanceUnit.CM) < FWD3dist) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
                     state = State.Button1;
                 }
                 break;
             case Button1:
-                if (mStateTime.time() > 3) {
-                    COUNTS += REV1count;
+                if (mStateTime.time() > Button1time) {
+                    COUNTS = getRightPosition() - REV1count;
+                    initR = 0;
                     mStateTime.reset();
                     state = State.REV1;
                 }
                 break;
             case REV1:
-                if (getRightPosition() > COUNTS) {
+                if (getRightPosition() < COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += TURNL3count;
+                    COUNTS = getRightPosition() + TURNL1count;
+                    initR = getRightPosition();
                     mStateTime.reset();
-                    state = State.TURNL3;
+                    state = State.TURNL1;
                 }
                 break;
-            case TURNL3:
+            case TURNL1:
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += FWD5count;
+                    COUNTS = getRightPosition() + FWD4count;
+                    initR = getRightPosition();
                     mStateTime.reset();
-                    state = State.FWD5;
+                    state = State.FWD4;
                 }
                 break;
-            case FWD5:
+            case FWD4:
                 if (getRightPosition() > COUNTS) {
                     setDrivePower(0, 0);
-                    COUNTS += TURNR3count;
+                    COUNTS = getLeftPosition() + TURNR3count;
+                    initL = getLeftPosition();
                     mStateTime.reset();
                     state = State.TURNR3;
                 }
@@ -251,18 +268,18 @@ public class AutoBlue extends OpMode {
                 if (getLeftPosition() > COUNTS) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
-                    state = State.FWD6;
+                    state = State.FWD5;
                 }
                 break;
-            case FWD6:
-                if (rangeSensor.cmOptical() < 4) {
+            case FWD5:
+                if (rangeSensor.getDistance(DistanceUnit.CM) < FWD5dist) {
                     setDrivePower(0, 0);
                     mStateTime.reset();
                     state = State.Button2;
                 }
                 break;
             case Button2:
-                if (mStateTime.time() > 3) {
+                if (mStateTime.time() > Button2time) {
                     mStateTime.reset();
                     state = State.done;
                 }
@@ -271,65 +288,113 @@ public class AutoBlue extends OpMode {
 
         switch (state) {
             case FWD1:
-                setDrivePower(0.5, 0.5);
+                if (getRightPosition()-initR < 250) {
+                    accelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(0.3, 0.3);
+                }
                 break;
             case Shoot:
                 shootspeed(.8);
                 lift.setPower(.25);
                 break;
             case TURNR1:
-                setDrivePower(0.5,-0.5);
+                if (getLeftPosition()-initL < 250) {
+                    accelerateR(0.3, -0.3);
+                } else if (COUNTS-getLeftPosition() < 800) {
+                    decelerateR(0.3, -0.3);
+                } else if (COUNTS-getLeftPosition() != 0){
+                    setDrivePower(0.3, -0.3);
+                }
                 break;
             case FWD2:
-                setDrivePower(0.5,0.5);
-                break;
-            case TURNL1:
-                setDrivePower(-0.5,0.5);
-                break;
-            case FWD3:
-                setDrivePower(0.5,0.5);
+                if (getRightPosition()-initR < 250) {
+                    accelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(0.3, 0.3);
+                }
                 break;
             case TURNR2:
-                setDrivePower(0.5,-0.5);
+                if (getLeftPosition()-initL < 250) {
+                    accelerateR(0.3, -0.3);
+                } else if (COUNTS-getLeftPosition() < 800) {
+                    decelerateR(0.3, -0.3);
+                } else if (COUNTS-getLeftPosition() != 0){
+                    setDrivePower(0.3, -0.3);
+                }
                 break;
-            case FWD4:
-                setDrivePower(0.5,0.5);
+            case FWD3:
+                if (getRightPosition()-initR < 250) {
+                    accelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(0.3, 0.3);
+                }
                 break;
             case Button1:
                 if (colorSensor.blue() > 6) {
-                    button_left.setPosition(180);
+                    button_right.setPosition(180);
                 } else if (colorSensor.red() > 3) {
-                    button_right.setPosition(0);
+                    button_left.setPosition(180);
                 }
                 if (mStateTime.time() > 2.5) {
                     button_left.setPosition(0);
-                    button_right.setPosition(180);
+                    button_right.setPosition(0);
                 }
                 break;
             case REV1:
                 setDrivePower(-0.5,-0.5);
                 break;
-            case TURNL3:
-                setDrivePower(-0.5,0.5);
+            case TURNL1:
+                if (getRightPosition()-initR < 250) {
+                    accelerateL(-0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(-0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(-0.3, 0.3);
+                }
                 break;
-            case FWD5:
-                setDrivePower(0.5,0.5);
+            case FWD4:
+                if (getRightPosition()-initR < 250) {
+                    accelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(0.3, 0.3);
+                }
                 break;
             case TURNR3:
-                setDrivePower(0.5,-0.5);
+                if (getLeftPosition()-initL < 250) {
+                    accelerateR(0.3, -0.3);
+                } else if (COUNTS-getLeftPosition() < 800) {
+                    decelerateR(0.3, -0.3);
+                } else if (COUNTS-getLeftPosition() != 0){
+                    setDrivePower(0.3, -0.3);
+                }
                 break;
-            case FWD6:
-                setDrivePower(0.5,0.5);
+            case FWD5:
+                if (getRightPosition()-initR < 250) {
+                    accelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() < 800) {
+                    decelerateL(0.3, 0.3);
+                } else if (COUNTS-getRightPosition() != 0){
+                    setDrivePower(0.3, 0.3);
+                }
                 break;
             case Button2:
                 if (colorSensor.blue() > 6) {
-                    button_left.setPosition(180);
+                    button_right.setPosition(180);
                 } else if (colorSensor.red() > 3) {
-                    button_right.setPosition(0);
+                    button_left.setPosition(180);
                 }
                 if (mStateTime.time() > 2.5) {
                     button_left.setPosition(0);
-                    button_right.setPosition(180);
+                    button_right.setPosition(0);
                 }
                 break;
             case done:
@@ -370,6 +435,40 @@ public class AutoBlue extends OpMode {
     private void shootspeed(double speed) {
         shoot_left.setPower(speed);
         shoot_right.setPower(speed);
+    }
+
+    //--------------------------------------------------------------------------
+    // accelerateR( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void accelerateR(double leftPower, double rightPower)
+    {
+        double initL2 = getLeftPosition();
+        setDrivePower(leftPower*((getLeftPosition()-initL2)+250/500), rightPower*((getLeftPosition()-initL2+250)/500));
+    }
+
+    //--------------------------------------------------------------------------
+    // accelerateL( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void accelerateL(double leftPower, double rightPower)
+    {
+        double initR2 = getRightPosition();
+        setDrivePower(leftPower*((getRightPosition()-initR2+250)/500), rightPower*((getRightPosition()-initR2+250)/500));
+    }
+
+    //--------------------------------------------------------------------------
+    // decelerateR( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void decelerateR(double leftPower, double rightPower)
+    {
+        setDrivePower(leftPower*((COUNTS-getLeftPosition()+200)/1000), rightPower*((COUNTS-getLeftPosition()+200)/1000));
+    }
+
+    //--------------------------------------------------------------------------
+    // decelerateL( LeftPower, RightPower );
+    //--------------------------------------------------------------------------
+    private void decelerateL(double leftPower, double rightPower)
+    {
+        setDrivePower(leftPower*((COUNTS-getRightPosition()+200)/1000), rightPower*((COUNTS-getRightPosition()+200)/1000));
     }
 
     //--------------------------------------------------------------------------
