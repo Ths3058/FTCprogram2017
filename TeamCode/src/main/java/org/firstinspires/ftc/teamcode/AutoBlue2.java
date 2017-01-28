@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -22,10 +23,10 @@ import static org.firstinspires.ftc.teamcode.StaticFunctions.distToEnc;
  * Created by Robotics.
  *
  * @author Ryan Kirkpatrick
- * @version 11/5/2016
+ * @version 1/28/2017
  */
-@Autonomous(name = "Blue1", group = "Autonomous")
-public class AutoBlue extends OpMode {
+@Autonomous(name = "Blue2", group = "Autonomous")
+public class AutoBlue2 extends OpMode {
     private enum State {
         FWD1,
         Shoot,
@@ -60,6 +61,8 @@ public class AutoBlue extends OpMode {
 
     ModernRoboticsI2cRangeSensor rangeSensor;
     ColorSensor colorSensor;
+    OpticalDistanceSensor opticalDistanceSensorleft;
+    OpticalDistanceSensor opticalDistanceSensorright;
 
     // hsvValues is an array that will hold the hue, saturation, and value information.
     float hsvValues[] = {0F,0F,0F};
@@ -126,6 +129,8 @@ public class AutoBlue extends OpMode {
         //get references to the sensors from the hardware map
         rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
         colorSensor = hardwareMap.colorSensor.get("sensor_color");
+        opticalDistanceSensorleft = hardwareMap.opticalDistanceSensor.get("ODS_left");
+        opticalDistanceSensorright = hardwareMap.opticalDistanceSensor.get("ODS_right");
 
         //reverse the right motor
         right.setDirection(DcMotor.Direction.REVERSE);
@@ -161,22 +166,24 @@ public class AutoBlue extends OpMode {
         telemetry.addData("0", String.format("%4.1f %6s", mStateTime.time(), state.toString()));
         // Send the current encoder info (encoder counts left and right).
         telemetry.addData("ENC", String.format("L:R %d:%d", getLeftPosition(), getRightPosition()));
-        telemetry.addData("Init", String.format("L:R %.0f:%f.0", initL, initR));
+        //telemetry.addData("Init", String.format("L:R %.0f:%f.0", initL, initR));
         // Send the current total counts.
         telemetry.addData("Total Target ", COUNTS);
 
         // send the info back to driver station using telemetry function.
-        telemetry.addData("LED", bLedOn ? "On" : "Off");
+        //telemetry.addData("LED", bLedOn ? "On" : "Off");
         //telemetry.addData("Clear", colorSensor.alpha());
         telemetry.addData("Red  ", colorSensor.red());
         telemetry.addData("Green", colorSensor.green());
         telemetry.addData("Blue ", colorSensor.blue());
         //telemetry.addData("Hue", hsvValues[0]);
 
-        //telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
-        //telemetry.addData("raw optical", rangeSensor.rawOptical());
-        telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-        telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+        // telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
+        // telemetry.addData("raw optical", rangeSensor.rawOptical());
+        //telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
+        //telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+        telemetry.addData("Left: ", opticalDistanceSensorleft.getLightDetected()); // white = 0.3
+        telemetry.addData("Right: ", opticalDistanceSensorright.getLightDetected());
         telemetry.update();
 
         // First switch statement
@@ -292,10 +299,10 @@ public class AutoBlue extends OpMode {
                 /*if (getRightPosition()-initR < 250) {
                     accelerateL(0.3, 0.3);
                 } else*/ if (COUNTS-getRightPosition()-90 < 800) {
-                    decelerateL(0.3, 0.3);
-                } else if (COUNTS-getRightPosition() != 0){
-                    setDrivePower(0.3, 0.3);
-                }
+                decelerateL(0.3, 0.3);
+            } else if (COUNTS-getRightPosition() != 0){
+                setDrivePower(0.3, 0.3);
+            }
                 break;
             case Shoot:
                 shootspeed(.8);
@@ -317,10 +324,10 @@ public class AutoBlue extends OpMode {
                 /*if (getRightPosition()-initR < 250) {
                     accelerateL(0.5, 0.5);
                 } else*/ if (COUNTS-getRightPosition() < 800) {
-                    decelerateL(0.3, 0.3);
-                } else if (COUNTS-getRightPosition() != 0){
-                    setDrivePower(0.3, 0.3);
-                }
+                decelerateL(0.3, 0.3);
+            } else if (COUNTS-getRightPosition() != 0){
+                setDrivePower(0.3, 0.3);
+            }
                 break;
             case TURNR2:
                 /*if (getLeftPosition()-initL < 250) {
@@ -338,9 +345,11 @@ public class AutoBlue extends OpMode {
                 /*if (getRightPosition()-initR < 250) {
                     accelerateL(0.3, 0.3);
                 } else*/
-                if (rangeSensor.getDistance(DistanceUnit.CM) < 8) {
-                    decelerateL(0.3, 0.3);
-                } else if (rangeSensor.getDistance(DistanceUnit.CM) != 0){
+                if (opticalDistanceSensorleft.getLightDetected() > 0.2) {
+                    setDrivePower(0.2,0.3);
+                } else if (opticalDistanceSensorright.getLightDetected() > 0.2) {
+                    setDrivePower(0.3,0.2);
+                } else {
                     setDrivePower(0.3, 0.3);
                 }
                 break;
@@ -374,10 +383,10 @@ public class AutoBlue extends OpMode {
                 /*if (getRightPosition()-initR < 250) {
                     accelerateL(0.3, 0.3);
                 } else*/ if (COUNTS-getRightPosition()-80 < 800) {
-                    decelerateL(0.3, 0.3);
-                } else if (COUNTS-getRightPosition() != 0){
-                    setDrivePower(0.3, 0.3);
-                }
+                decelerateL(0.3, 0.3);
+            } else if (COUNTS-getRightPosition() != 0){
+                setDrivePower(0.3, 0.3);
+            }
                 break;
             case TURNR3:
                 /*if (getLeftPosition()-initL < 250) {
@@ -395,9 +404,11 @@ public class AutoBlue extends OpMode {
                 /*if (getRightPosition()-initR < 250) {
                     accelerateL(0.3, 0.3);
                 } else*/
-                if (COUNTS-getRightPosition()-80 < 800) {
-                    decelerateL(0.3, 0.3);
-                } else if (COUNTS-getRightPosition() != 0){
+                if (opticalDistanceSensorleft.getLightDetected() > 0.2) {
+                    setDrivePower(0.2,0.3);
+                } else if (opticalDistanceSensorright.getLightDetected() > 0.2) {
+                    setDrivePower(0.3,0.2);
+                } else {
                     setDrivePower(0.3, 0.3);
                 }
                 break;

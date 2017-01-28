@@ -25,9 +25,8 @@ public class TeleOp extends OpMode {
 
     // Servos
     private CRServo sweep;
+    private CRServo ball_holder;
     private Servo arm;
-    private Servo arm_left;
-    private Servo arm_right;
     private Servo button_left;
     private Servo button_right;
 
@@ -55,9 +54,8 @@ public class TeleOp extends OpMode {
 
         //get references to the servos from the hardware map
         sweep = hardwareMap.crservo.get("sweep");
+        ball_holder = hardwareMap.crservo.get("holder");
         arm = hardwareMap.servo.get("arm");
-        arm_left = hardwareMap.servo.get("arm_left");
-        arm_right = hardwareMap.servo.get("arm_right");
         button_left = hardwareMap.servo.get("button_left");
         button_right = hardwareMap.servo.get("button_right");
 
@@ -67,8 +65,6 @@ public class TeleOp extends OpMode {
 
         //set the initial positions for the servos
         arm.setPosition(0);
-        arm_left.setPosition(130);
-        arm_right.setPosition(0);
         button_left.setPosition(0);
         button_right.setPosition(0);
 
@@ -154,35 +150,29 @@ public class TeleOp extends OpMode {
         // Cap ball lift
         if (gamepad2.right_trigger > 0) {
             caplift.setPower(.75);                  // cap ball lift up
+            ball_holder.setPower(-1);
         } else if (gamepad2.left_trigger > 0) {
             caplift.setPower(-.75);                 // cap ball lift down
+            ball_holder.setPower(1);
         } else {
             caplift.setPower(0);                    // cap ball lift stop
-        }
-
-        // Arms for holding cap ball
-        if (gamepad2.a && !capOpen) {
-            arm_right.setPosition(120);
-            buttonTime.reset();
-            capOpen = true;
-        } else if (gamepad2.b && !capClose) {
-            arm_right.setPosition(0);
-            buttonTime.reset();
-            capClose = true;
-        }
-        if (capOpen && buttonTime.time() > 1.0) {
-            arm_left.setPosition(0);
-            capOpen = false;
-        } else if (capClose && buttonTime.time() > 1.0) {
-            arm_left.setPosition(130);
-            capClose = false;
+            ball_holder.setPower(0);
         }
 
         // Arm for holding cap ball lift arm up
         if (gamepad2.x) {
-            arm.setPosition(0);
+            arm.setPosition(180);
         } else if (gamepad2.y) {
-            arm.setPosition(130);
+            arm.setPosition(0);
+        }
+
+        // Front ball holding mechanism
+        if (gamepad2.a) {
+            ball_holder.setPower(.5);
+        } else if (gamepad2.b) {
+            ball_holder.setPower(-.5);
+        } else {
+            ball_holder.setPower(0);
         }
     }
 
